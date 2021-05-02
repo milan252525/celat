@@ -1,3 +1,6 @@
+#ifndef AUTOMAT
+#define AUTOMAT
+
 #include <string>
 #include <vector>
 #include <list>
@@ -24,13 +27,9 @@ private:
     size_t height;
     std::list<size_t> cells;
 
+
 public:
-    automat(size_t width, size_t height) :
-        rules(std::vector<rule>()), 
-        cell_types(std::vector<cell_type>()),
-        cells(std::list<size_t>(width* height, DEFAULT_CELL)),
-        width(width),
-        height(height)
-    {}
+    automat(size_t width, size_t height);
 };
 
+#endif // !AUTOMAT
