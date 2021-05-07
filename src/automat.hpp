@@ -7,29 +7,35 @@
 
 constexpr size_t DEFAULT_CELL = 0;
 
-struct cell_type {
+const std::string DEFAULT_DEFINITIONS = "LIVE,FFFFFF\nBLACK,000000";
+const std::string DEFAULT_RULES = "LIVE,01,LIVE,DEAD\nLIVE,23,LIVE,LIVE\nLIVE,4567,LIVE,DEAD\nDEAD,3,LIVE,LIVE";
+
+struct CellType {
     std::string name;
-    std::string colour;
+    unsigned long colour;
 };
 
-struct rule {
-    std::string original_state;
-    int neighbors;
-    std::string neighbor_state;
-    std::string new_state;
+struct Rule {
+    std::string originalState;
+    std::vector<int> neighbors;
+    std::string neighborState;
+    std::string newState;
 };
 
-class automat {
+class Automat {
 private:
-    std::vector<rule> rules;
-    std::vector<cell_type> cell_types;
+    std::vector<Rule> rules;
+    std::vector<CellType> cellTypes;
     size_t width;
     size_t height;
-    std::list<size_t> cells;
-
+    std::vector<size_t> cells;
 
 public:
-    automat(size_t width, size_t height);
+    Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions);
+
+    static std::vector<std::string> splitByDelim(const std::string& line, const char delim);
+
+    void doOneEvolution();
 };
 
 #endif // !AUTOMAT

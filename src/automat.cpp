@@ -1,36 +1,53 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <sstream>
 
-constexpr size_t DEFAULT_CELL = 0;
+#include "automat.hpp"
 
-struct cell_type {
-    std::string name;
-    std::string colour;
-};
+std::vector<std::string> Automat::splitByDelim(const std::string& line, const char delim) {
+	std::vector<std::string> result;
+	std::stringstream sstream(line);
+	std::string buffer;
+	while (std::getline(sstream, buffer, delim)) {
+		result.push_back(buffer);
+	}
+	return result;
+}
 
-struct rule {
-    std::string original_state;
-    int neighbors;
-    std::string neighbor_state;
-    std::string new_state;
-};
+Automat::Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions)
+	: width(width),
+	height(height),
+	cellTypes(std::vector<CellType>()),
+	rules(std::vector<Rule>()),
+	cells(std::vector<size_t>(width* height))
+{
+	std::istringstream lines(cellDefinitions);
+	for (std::string cellLine; std::getline(lines, cellLine); )
+	{
+		std::vector<std::string> cellSplit = Automat::splitByDelim(cellLine, ',');
+		CellType x;
+		x.name = cellSplit.at(0);
+		x.colour = std::stoul(cellSplit.at(1));
+		cellTypes.push_back(x);
+	}
 
-class automat {
-private:
-    std::vector<rule> rules;
-    std::vector<cell_type> cell_types;
-    size_t width;
-    size_t height;
-    std::list<size_t> cells;
+	std::istringstream rulesLines(rulesDefinitions);
+	for (std::string ruleLine; std::getline(rulesLines, ruleLine); )
+	{
+		std::vector<std::string> ruleSplit = Automat::splitByDelim(ruleLine, ',');
+		Rule x;
+		x.originalState = ruleSplit.at(0);
+		std::string neighborCount = ruleSplit.at(1);
+		for (char& c : neighborCount) {
+			x.neighbors.push_back((int)c - (int)'0');
+		}
+		x.neighborState = ruleSplit.at(2);
+		x.newState = ruleSplit.at(3);
+		rules.push_back(x);
+	}
+}
 
-public:
-    automat(size_t width, size_t height) :
-        rules(std::vector<rule>()), 
-        cell_types(std::vector<cell_type>()),
-        cells(std::list<size_t>(width* height, DEFAULT_CELL)),
-        width(width),
-        height(height)
-    {}
-};
+void Automat::doOneEvolution() {
 
+}
