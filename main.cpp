@@ -2,16 +2,23 @@
 #include "wx/sizer.h"
 #include "src/automat.hpp"
 
-constexpr size_t CELL_WIDTH = 25;
-constexpr size_t GRID_WIDTH = 25;
+constexpr size_t CELL_WIDTH = 20;
+constexpr size_t GRID_WIDTH = 30;
 
 constexpr int BUTTON_NEXT_STEP = 101;
+constexpr int BUTTON_SET_RULES = 102;
+constexpr int BUTTON_CLEAR = 103;
 
 class DrawPane : public wxPanel
 {
+private:
+    
 public:
-    DrawPane(wxFrame* parent, wxSize size) :
-        wxPanel(parent, -1, wxDefaultPosition, size) {
+    Automat* automat;
+
+    DrawPane(wxFrame* parent, wxSize size, Automat *automat) :
+        wxPanel(parent, -1, wxDefaultPosition, size),
+        automat(automat) {
     }
 
     void paintEvent(wxPaintEvent& evt) {
@@ -39,10 +46,28 @@ public:
 class MainFrame : public wxFrame {
 private:
     DrawPane* drawPane;
-    Automat* automaton;
+    wxStaticText* cellDefTitle;
+    wxTextCtrl* cellDefTxt;
+    wxStaticText* cellRulesTitle;
+    wxTextCtrl* cellRulesTxt;
+    wxButton* btnSet;
+    wxStaticText* speedTxt;
+    wxSlider* speedSlider;
+    wxButton* btnStart;
+    wxButton* btnOneStep;
+    wxButton* btnClear;
+
+    wxBoxSizer* sizer;
+    wxBoxSizer* sizerCtrlBtns;
+    wxFlexGridSizer* controlsSizer;
+
+    unsigned int simulationSpeed;
+
 public:
     MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
-    void oneStepBtnEvent(wxMouseEvent& event);
+    void oneStepBtnEvent(wxCommandEvent& event);
+    void setRulesBtnEvent(wxCommandEvent& event);
+    void clearCells(wxCommandEvent& event);
 
     DECLARE_EVENT_TABLE()
 };
@@ -58,29 +83,34 @@ bool MainApp::OnInit() {
 MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     : wxFrame((wxFrame*)NULL, -1, title, pos, size) {
     
-    automaton = new Automat(GRID_WIDTH, GRID_WIDTH, "", "");
+    Automat* automat = new Automat(GRID_WIDTH, GRID_WIDTH, Automat::DEFAULT_DEFINITIONS, Automat::DEFAULT_RULES);
+
     int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
+
+    simulationSpeed = 1;
     
-    drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth));
+    drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth), automat);
 
     SetBackgroundColour(*wxLIGHT_GREY);
 
-    wxStaticText* cellDefTitle = new wxStaticText(this, -1, wxT("CELL DEFINITIONS"));
-    wxTextCtrl* cellDefTxt = new wxTextCtrl(this, -1, DEFAULT_DEFINITIONS, wxDefaultPosition, wxSize(300, 200), wxTE_MULTILINE | wxTE_LEFT);
-    wxStaticText* cellRulesTitle = new wxStaticText(this, -1, wxT("RULES"));
-    wxTextCtrl* cellRulesTxt = new wxTextCtrl(this, -1, DEFAULT_RULES, wxDefaultPosition, wxSize(300, 200), wxTE_MULTILINE | wxTE_LEFT);
-    wxButton* btnSet = new wxButton(this, -1, wxT("SET"));
-    wxStaticText* speedTxt = new wxStaticText(this, -1, wxT("SIMULATION SPEED (SECONDS)"));
-    wxSlider* speedSlider = new wxSlider(this, -1, 3, 1, 10, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL | wxSL_MIN_MAX_LABELS | wxSL_VALUE_LABEL);
-    wxButton* btnStart = new wxButton(this, -1, wxT("START"));
-    wxButton* btnOneStep = new wxButton(this, BUTTON_NEXT_STEP, wxT("ONE STEP"));
+    cellDefTitle = new wxStaticText(this, -1, wxT("CELL DEFINITIONS\n(NAME,COLOUR)"));
+    cellDefTxt = new wxTextCtrl(this, -1, Automat::DEFAULT_DEFINITIONS, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
+    cellRulesTitle = new wxStaticText(this, -1, wxT("RULES\n(OLD, NEIGHBOR_COUNT, NEIGHBOR_STATE, NEW)"));
+    cellRulesTxt = new wxTextCtrl(this, -1, Automat::DEFAULT_RULES, wxDefaultPosition, wxSize(300, 200), wxTE_MULTILINE | wxTE_LEFT);
+    btnSet = new wxButton(this, BUTTON_SET_RULES, wxT("SET"));
+    speedTxt = new wxStaticText(this, -1, wxT("SIMULATION SPEED (SECONDS)"));
+    speedSlider = new wxSlider(this, -1, 3, 1, 10, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL | wxSL_MIN_MAX_LABELS | wxSL_VALUE_LABEL);
+    btnStart = new wxButton(this, -1, wxT("START"));
+    btnOneStep = new wxButton(this, BUTTON_NEXT_STEP, wxT("ONE STEP"));
+    btnClear = new wxButton(this, BUTTON_CLEAR, wxT("CLEAR"));
 
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer* sizerCtrlBtns = new wxBoxSizer(wxHORIZONTAL);
-    wxFlexGridSizer* controlsSizer = new wxFlexGridSizer(8, 1, 10, 10);
+    sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizerCtrlBtns = new wxBoxSizer(wxHORIZONTAL);
+    controlsSizer = new wxFlexGridSizer(8, 1, 10, 10);
         
     sizerCtrlBtns->Add(btnStart);
     sizerCtrlBtns->Add(btnOneStep);
+    sizerCtrlBtns->Add(btnClear);
 
     controlsSizer->Add(cellDefTitle);
     controlsSizer->Add(cellDefTxt, wxEXPAND);
@@ -99,34 +129,54 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 }
 
 void DrawPane::mouseDown(wxMouseEvent& event) {
-    wxClientDC dc(this);
-    int x = event.GetX();
-    int y = event.GetY();
-    int row_cell = x / CELL_WIDTH;
-    int col_cell = y / CELL_WIDTH;
-    dc.DrawText(wxString(std::to_string(row_cell) + " " + std::to_string(col_cell)), event.GetX(), event.GetY());
+    //automat is using opposite coordinate system
+    int x = event.GetY();
+    int y = event.GetX();
+    int rowCell = x / CELL_WIDTH;
+    int colCell = y / CELL_WIDTH;
+    if (rowCell >= 0 && colCell >= 0 && rowCell < GRID_WIDTH && colCell < GRID_WIDTH) {
+        automat->cellCycleType(rowCell, colCell);
+        paintNow();
+    }
 }
 
 void DrawPane::render(wxDC& dc) {
-    dc.SetPen(wxPen(wxColor(0, 0, 0), 1));
-    dc.SetBrush(*wxWHITE_BRUSH);
+    dc.SetPen(*wxGREY_PEN);
 
     for (size_t i = 0; i < GRID_WIDTH; i++)
     {
         for (size_t j = 0; j < GRID_WIDTH; j++)
         {
+            wxColor cellColour = wxColor(automat->getColourAt(j, i));
+            dc.SetBrush(wxBrush(cellColour));
             dc.DrawRectangle(wxRect(wxPoint(i * CELL_WIDTH, j * CELL_WIDTH), wxSize(CELL_WIDTH, CELL_WIDTH)));
+            //dc.DrawText(wxString(std::to_string(index)), i * CELL_WIDTH, j * CELL_WIDTH);
         }
-    }    
+    } 
 }
 
-void MainFrame::oneStepBtnEvent(wxMouseEvent& event) {
-    MainFrame::automaton->doOneEvolution();
+void MainFrame::oneStepBtnEvent(wxCommandEvent& event) {
+    drawPane->automat->doOneEvolution();
+}
+
+void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
+    std::string newDefs = std::string(this->cellDefTxt->GetValue().mb_str());
+    std::string newRules = std::string(this->cellRulesTxt->GetValue().mb_str());
+    drawPane->automat = new Automat(GRID_WIDTH, GRID_WIDTH, newDefs, newRules);
+    drawPane->paintNow();
+}
+
+void MainFrame::clearCells(wxCommandEvent& event) {
+    drawPane->automat->clearCells();
+    drawPane->paintNow();
 }
 
 IMPLEMENT_APP(MainApp)
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
+EVT_BUTTON(BUTTON_NEXT_STEP, MainFrame::oneStepBtnEvent)
+EVT_BUTTON(BUTTON_SET_RULES, MainFrame::setRulesBtnEvent)
+EVT_BUTTON(BUTTON_CLEAR, MainFrame::clearCells)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DrawPane, wxPanel)

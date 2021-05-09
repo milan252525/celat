@@ -2,8 +2,12 @@
 #include <vector>
 #include <list>
 #include <sstream>
+#include <algorithm>
 
 #include "automat.hpp"
+
+std::string Automat::DEFAULT_DEFINITIONS = "DEAD,FFFFFF\nALIVE,000000";
+std::string Automat::DEFAULT_RULES = "ALIVE,01,LIVE,DEAD\nALIVE,23,ALIVE,ALIVE\nALIVE,4567,ALIVE,DEAD\nDEAD,3,ALIVE,ALIVE";
 
 std::vector<std::string> Automat::splitByDelim(const std::string& line, const char delim) {
 	std::vector<std::string> result;
@@ -20,7 +24,7 @@ Automat::Automat(const size_t width, const size_t height, const std::string& cel
 	height(height),
 	cellTypes(std::vector<CellType>()),
 	rules(std::vector<Rule>()),
-	cells(std::vector<size_t>(width* height))
+	cells(std::vector<size_t>(width*height, 0))
 {
 	std::istringstream lines(cellDefinitions);
 	for (std::string cellLine; std::getline(lines, cellLine); )
@@ -28,7 +32,7 @@ Automat::Automat(const size_t width, const size_t height, const std::string& cel
 		std::vector<std::string> cellSplit = Automat::splitByDelim(cellLine, ',');
 		CellType x;
 		x.name = cellSplit.at(0);
-		x.colour = std::stoul(cellSplit.at(1));
+		x.colour = "#" + cellSplit.at(1);
 		cellTypes.push_back(x);
 	}
 
@@ -50,4 +54,22 @@ Automat::Automat(const size_t width, const size_t height, const std::string& cel
 
 void Automat::doOneEvolution() {
 
+}
+
+std::string Automat::getColourAt(size_t x, size_t y) {
+	size_t index = y * height + x;
+	size_t cellType = cells.at(index);
+	return cellTypes.at(cellType).colour;
+}
+
+void Automat::cellCycleType(size_t x, size_t y) {
+	size_t index = y * height + x;
+	cells.at(index)++;
+	if (cells.at(index) >= cellTypes.size()) {
+		cells.at(index) = 0;
+	}
+}
+
+void Automat::clearCells() {
+	std::fill(cells.begin(), cells.end(), 0);
 }
