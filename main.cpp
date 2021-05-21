@@ -1,6 +1,5 @@
 #include "wx/wx.h"
-#include "wx/sizer.h"
-#include "wx/msgdlg.h"
+
 #include "src/automat.hpp"
 #include "src/presets.hpp"
 
@@ -13,6 +12,9 @@ constexpr int BUTTON_CLEAR = 103;
 constexpr int BUTTON_DISPLAY_HELP = 104;
 constexpr int BUTTON_PRESET_GOL = 105;
 constexpr int BUTTON_PRESET_WW = 106;
+constexpr int TIMER_ID = 107;
+constexpr int BUTTON_START = 108;
+
 
 class DrawPane : public wxPanel
 {
@@ -80,7 +82,7 @@ private:
     wxBoxSizer* sizerPresets;
     wxFlexGridSizer* controlsSizer;
 
-    unsigned int simulationSpeed;
+    wxTimer* timer;
 
 public:
     MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
@@ -89,6 +91,8 @@ public:
     void displayHelpEvent(wxCommandEvent& event);
     void clearCells(wxCommandEvent& event);
     void loadPreset(wxCommandEvent& event);
+    void onTimer(wxTimerEvent& event);
+    void timerStartStop(wxCommandEvent& event);
 
     DECLARE_EVENT_TABLE()
 };
@@ -110,8 +114,6 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     Automat* automat = new Automat(GRID_WIDTH, GRID_WIDTH, def_defs, def_rules, overflow);
 
     int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
-
-    simulationSpeed = 1;
     
     drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth), automat);
 
@@ -131,10 +133,10 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     btnPresetGOL = new wxButton(this, BUTTON_PRESET_GOL, wxT("GAME OF LIFE"));
     btnPresetWW = new wxButton(this, BUTTON_PRESET_WW, wxT("WIREWORLD"));
 
-    speedTxt = new wxStaticText(this, -1, wxT("SIMULATION SPEED (SECONDS)"));
-    speedSlider = new wxSlider(this, -1, 3, 1, 10, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL | wxSL_MIN_MAX_LABELS | wxSL_VALUE_LABEL);
+    speedTxt = new wxStaticText(this, -1, wxT("SIMULATION SPEED"));
+    speedSlider = new wxSlider(this, -1, 500, 100, 1000, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL);
     
-    btnStart = new wxButton(this, -1, wxT("START"));
+    btnStart = new wxButton(this, BUTTON_START, wxT("START"));
     btnOneStep = new wxButton(this, BUTTON_NEXT_STEP, wxT("ONE STEP"));
     btnClear = new wxButton(this, BUTTON_CLEAR, wxT("CLEAR"));
 
@@ -173,6 +175,8 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 
     SetSizer(sizer);
     SetAutoLayout(true);
+
+    timer = new wxTimer(this, TIMER_ID);
 }
 
 void DrawPane::mouseDown(wxMouseEvent& event) {
@@ -203,11 +207,13 @@ void DrawPane::render(wxDC& dc) {
 }
 
 void MainFrame::oneStepBtnEvent(wxCommandEvent& event) {
+    if (timer->IsRunning()) timerStartStop(event);
     drawPane->automat->doOneEvolution();
     drawPane->paintNow();
 }
 
 void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
+    if (timer->IsRunning()) timerStartStop(event);
     std::string newDefs = std::string(this->cellDefTxt->GetValue().mb_str());
     std::string newRules = std::string(this->cellRulesTxt->GetValue().mb_str());
     bool overflow = checkOverFlow->IsChecked();
@@ -243,10 +249,15 @@ void MainFrame::clearCells(wxCommandEvent& event) {
 }
 
 void MainFrame::loadPreset(wxCommandEvent& event) {
+    if (timer->IsRunning()) timerStartStop(event);
     bool overflow = checkOverFlow->IsChecked();
-    auto& new_defs = Presets::GOL_defs;
-    auto& new_rules = Presets::GOL_rules;
-    if (event.GetId() == BUTTON_PRESET_WW) {
+    std::string new_defs;
+    std::string new_rules;
+    if (event.GetId() == BUTTON_PRESET_GOL) {
+        new_defs = Presets::GOL_defs;
+        new_rules = Presets::GOL_rules;
+    }
+    else if (event.GetId() == BUTTON_PRESET_WW) {
         new_defs = Presets::WW_defs;
         new_rules = Presets::WW_rules;
     }
@@ -254,6 +265,22 @@ void MainFrame::loadPreset(wxCommandEvent& event) {
     cellDefTxt->SetValue(new_defs);
     cellRulesTxt->SetValue(new_rules);
     drawPane->paintNow();
+}
+
+void MainFrame::onTimer(wxTimerEvent& event) {
+    drawPane->automat->doOneEvolution();
+    drawPane->paintNow();
+}
+
+void MainFrame::timerStartStop(wxCommandEvent& event) {
+    if (timer->IsRunning()) {
+        timer->Stop();
+        btnStart->SetLabel("Start");
+    }
+    else {
+        timer->Start(speedSlider->GetValue() );
+        btnStart->SetLabel("Stop");
+    }
 }
 
 IMPLEMENT_APP(MainApp)
@@ -265,6 +292,8 @@ EVT_BUTTON(BUTTON_DISPLAY_HELP, MainFrame::displayHelpEvent)
 EVT_BUTTON(BUTTON_PRESET_GOL, MainFrame::loadPreset)
 EVT_BUTTON(BUTTON_PRESET_WW, MainFrame::loadPreset)
 EVT_BUTTON(BUTTON_CLEAR, MainFrame::clearCells)
+EVT_TIMER(TIMER_ID, MainFrame::onTimer)
+EVT_BUTTON(BUTTON_START, MainFrame::timerStartStop)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DrawPane, wxPanel)
