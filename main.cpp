@@ -1,5 +1,6 @@
 #include "wx/wx.h"
 #include "wx/sizer.h"
+#include "wx/msgdlg.h"
 #include "src/automat.hpp"
 
 constexpr size_t CELL_WIDTH = 20;
@@ -162,8 +163,16 @@ void MainFrame::oneStepBtnEvent(wxCommandEvent& event) {
 void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
     std::string newDefs = std::string(this->cellDefTxt->GetValue().mb_str());
     std::string newRules = std::string(this->cellRulesTxt->GetValue().mb_str());
-    drawPane->automat = new Automat(GRID_WIDTH, GRID_WIDTH, newDefs, newRules);
-    drawPane->paintNow();
+    try
+    {
+        drawPane->automat = new Automat(GRID_WIDTH, GRID_WIDTH, newDefs, newRules);
+        drawPane->paintNow();
+    }
+    catch (const Automat::InvalidFormatException& e)
+    {
+        auto error = e.what();
+        wxMessageBox(wxString::FromUTF8(error), wxT("Format error"), wxICON_INFORMATION);
+    }
 }
 
 void MainFrame::clearCells(wxCommandEvent& event) {
