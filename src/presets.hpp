@@ -17,12 +17,22 @@ struct Presets {
 		"EMPTY,000000\n"
 		"CONDUCTOR,FFFF00\n"
 		"HEAD,0000FF\n"
-		"TAIL,FF0000\n";
+		"TAIL,FF0000";
 
 	inline static std::string WW_rules =
 		"HEAD,,,TAIL\n"
 		"TAIL,,,CONDUCTOR\n"
 		"CONDUCTOR,12,HEAD,HEAD";
+
+	inline static std::string BB_defs =
+		"DEAD,000000\n"
+		"ALIVE,FFFFFF\n"
+		"DYING,AAAAAA";
+
+	inline static std::string BB_rules =
+		"ALIVE,,,DYING\n"
+		"DYING,,,DEAD\n"
+		"DEAD,2,ALIVE,ALIVE";
 };
 
 #endif // !AUTOMAT_PRESETS
