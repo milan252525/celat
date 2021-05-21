@@ -10,9 +10,6 @@
 
 #include "automat.hpp"
 
-std::string Automat::DEFAULT_DEFINITIONS = "DEAD,FFFFFF\nALIVE,000000";
-std::string Automat::DEFAULT_RULES = "ALIVE,01,ALIVE,DEAD\nALIVE,23,ALIVE,ALIVE\nALIVE,4567,ALIVE,DEAD\nDEAD,3,ALIVE,ALIVE";
-
 std::vector<std::string> Automat::splitByDelim(const std::string& line, const char delim) {
 	std::vector<std::string> result;
 	std::stringstream sstream(line);
@@ -23,13 +20,20 @@ std::vector<std::string> Automat::splitByDelim(const std::string& line, const ch
 	return result;
 }
 
-Automat::Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions)
+Automat::Automat(
+	const size_t width, 
+	const size_t height, 
+	const std::string& cellDefinitions, 
+	const std::string& rulesDefinitions, 
+	const bool overflowEdges
+)
 	: width(width),
 	height(height),
 	cellTypes(std::vector<CellType>()),
 	rules(std::vector<Rule>()),
 	cells(std::vector<size_t>(width*height, 0)),
-	name_to_index(std::unordered_map<std::string, size_t>())
+	name_to_index(std::unordered_map<std::string, size_t>()),
+	overflowEdges(overflowEdges)
 {
 	auto [success, error] = processDefinitions(cellDefinitions);
 	if (!success) {
@@ -93,9 +97,11 @@ std::pair<bool, std::string> Automat::processRules(const std::string& rulesDefin
 				x.neighbors.push_back((unsigned int)c - (unsigned int)'0');
 			}
 
-			auto [exists2, index2] = cellNameToIndex(ruleSplit.at(2));
-			if (!exists2) return { false, ("Cell type " + ruleSplit.at(2) + " doesn't exist:\n" + ruleLine) };
-			x.neighborState = index2;
+			if (x.neighbors.size() > 0) {
+				auto [exists2, index2] = cellNameToIndex(ruleSplit.at(2));
+				if (!exists2) return { false, ("Cell type " + ruleSplit.at(2) + " doesn't exist:\n" + ruleLine) };
+				x.neighborState = index2;
+			}
 
 			auto [exists3, index3] = cellNameToIndex(ruleSplit.at(3));
 			if (!exists3) return { false, ("Cell type " + ruleSplit.at(3) + " doesn't exist:\n" + ruleLine) };
@@ -117,7 +123,7 @@ std::pair<bool, size_t> Automat::cellNameToIndex(const std::string& name) const 
 	else return { true, name_to_index.at(name) };
 }
 
-unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const bool overflowEdges, const size_t cellType) const {
+unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const size_t cellType) const {
 	int vectors[][2] = { {-1,-1}, {0,-1}, {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0} };
 	unsigned int count = 0;
 	for (auto& vector : vectors) {
@@ -158,15 +164,22 @@ void Automat::doOneEvolution() {
 		size_t x = index % width;
 		size_t y = index / height;
 		for (Rule& rule : rules) {
+			bool applied = false;
 			if (rule.originalState == cells.at(index)) {
-				unsigned int neighborsofType = getNeighborsOfType(x, y, true, rule.neighborState);
+				unsigned int neighborsofType = getNeighborsOfType(x, y, rule.neighborState);
+				if (rule.neighbors.size() == 0) {
+					new_cells.at(index) = rule.newState;
+					applied = true;
+				}
 				for (unsigned int& amount : rule.neighbors) {
 					if (amount == neighborsofType) {
 						new_cells.at(index) = rule.newState;
+						applied = true;
 						break;
 					}
 				}
 			}
+			if (applied) break;
 		}
 	}
 	cells = new_cells;

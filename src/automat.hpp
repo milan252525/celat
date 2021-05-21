@@ -28,6 +28,8 @@ private:
     size_t width;
     size_t height;
 
+    bool overflowEdges;
+
     std::vector<size_t> cells;
     std::unordered_map<std::string, size_t> name_to_index;
 
@@ -36,15 +38,13 @@ private:
     std::pair<bool, std::string> processDefinitions(const std::string& cellDefinitions);
     std::pair<bool, std::string> processRules(const std::string& rulesDefinitions);
 
-    unsigned int getNeighborsOfType(const size_t x, const size_t y, const bool overflowEdges, const size_t type) const;
+    unsigned int getNeighborsOfType(const size_t x, const size_t y, const size_t type) const;
     size_t getCellTypeAt(const size_t x, const size_t y) const;
   
 public:
-    Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions);
+    Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions, const bool overFlowEdges);
 
     static std::vector<std::string> splitByDelim(const std::string& line, const char delim);
-    static std::string DEFAULT_DEFINITIONS;
-    static std::string DEFAULT_RULES;
 
     std::string getColourAt(const size_t x, const size_t y) const;
     void cellCycleType(const size_t x, const size_t y);

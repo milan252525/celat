@@ -26,5 +26,8 @@
     <ClInclude Include="src\automat.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\presets.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
