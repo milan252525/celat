@@ -158,6 +158,7 @@ void DrawPane::render(wxDC& dc) {
 
 void MainFrame::oneStepBtnEvent(wxCommandEvent& event) {
     drawPane->automat->doOneEvolution();
+    drawPane->paintNow();
 }
 
 void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {

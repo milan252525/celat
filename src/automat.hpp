@@ -16,7 +16,7 @@ struct CellType {
 
 struct Rule {
     size_t originalState;
-    std::vector<int> neighbors;
+    std::vector<unsigned int> neighbors;
     size_t neighborState;
     size_t newState;
 };
@@ -35,6 +35,9 @@ private:
 
     std::pair<bool, std::string> processDefinitions(const std::string& cellDefinitions);
     std::pair<bool, std::string> processRules(const std::string& rulesDefinitions);
+
+    unsigned int getNeighborsOfType(const size_t x, const size_t y, const bool overflowEdges, const size_t type) const;
+    size_t getCellTypeAt(const size_t x, const size_t y) const;
   
 public:
     Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions);
@@ -43,8 +46,8 @@ public:
     static std::string DEFAULT_DEFINITIONS;
     static std::string DEFAULT_RULES;
 
-    std::string getColourAt(size_t x, size_t y);
-    void cellCycleType(size_t x, size_t y);
+    std::string getColourAt(const size_t x, const size_t y) const;
+    void cellCycleType(const size_t x, const size_t y);
     void clearCells();
     void doOneEvolution();
 

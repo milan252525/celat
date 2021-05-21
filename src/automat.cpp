@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <utility>
 #include <unordered_map>
-#include <cctype>
 #include <algorithm>
 #include <regex>
 
@@ -91,7 +90,7 @@ std::pair<bool, std::string> Automat::processRules(const std::string& rulesDefin
 
 			std::string neighborCount = ruleSplit.at(1);
 			for (char& c : neighborCount) {
-				x.neighbors.push_back((int)c - (int)'0');
+				x.neighbors.push_back((unsigned int)c - (unsigned int)'0');
 			}
 
 			auto [exists2, index2] = cellNameToIndex(ruleSplit.at(2));
@@ -118,11 +117,62 @@ std::pair<bool, size_t> Automat::cellNameToIndex(const std::string& name) const 
 	else return { true, name_to_index.at(name) };
 }
 
-void Automat::doOneEvolution() {
-
+unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const bool overflowEdges, const size_t cellType) const {
+	int vectors[][2] = { {-1,-1}, {0,-1}, {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0} };
+	unsigned int count = 0;
+	for (auto& vector : vectors) {
+		//conversion is safe, the number will never be large enough to overflow
+		long long new_x = x + vector[0];
+		long long new_y = y + vector[1];
+		if (new_x < 0) {
+			if (overflowEdges) new_x = width - 1;
+			else continue;
+		}
+		else if (new_x >= (signed long long)width) {
+			if (overflowEdges) new_x = 0;
+			else continue;
+		}
+		if (new_y < 0) {
+			if (overflowEdges) new_y = height - 1;
+			else continue;
+		}
+		else if (new_y >= (signed long long)height) {
+			if (overflowEdges) new_y = 0;
+			else continue;
+		}
+		if (getCellTypeAt(new_x, new_y) == cellType) {
+			count++;
+		}
+	}
+	return count;
 }
 
-std::string Automat::getColourAt(size_t x, size_t y) {
+size_t Automat::getCellTypeAt(const size_t x, const size_t y) const {
+	size_t index = y * height + x;
+	return cells.at(index);
+}
+
+void Automat::doOneEvolution() {
+	std::vector<size_t> new_cells(cells);
+	for (size_t index = 0; index < cells.size(); index++) {
+		size_t x = index % width;
+		size_t y = index / height;
+		for (Rule& rule : rules) {
+			if (rule.originalState == cells.at(index)) {
+				unsigned int neighborsofType = getNeighborsOfType(x, y, true, rule.neighborState);
+				for (unsigned int& amount : rule.neighbors) {
+					if (amount == neighborsofType) {
+						new_cells.at(index) = rule.newState;
+						break;
+					}
+				}
+			}
+		}
+	}
+	cells = new_cells;
+}
+
+std::string Automat::getColourAt(const size_t x, const size_t y) const {
 	size_t index = y * height + x;
 	size_t cellType = cells.at(index);
 	return cellTypes.at(cellType).colour;
