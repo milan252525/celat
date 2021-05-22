@@ -6,16 +6,18 @@
 constexpr size_t CELL_WIDTH = 20;
 constexpr size_t GRID_WIDTH = 30;
 
-constexpr int BUTTON_NEXT_STEP = 101;
-constexpr int BUTTON_SET_RULES = 102;
-constexpr int BUTTON_CLEAR = 103;
-constexpr int BUTTON_DISPLAY_HELP = 104;
-constexpr int BUTTON_PRESET_GOL = 105;
-constexpr int BUTTON_PRESET_WW = 106;
-constexpr int TIMER_ID = 107;
-constexpr int BUTTON_START = 108;
-constexpr int BUTTON_PRESET_BB = 109;
-constexpr int BUTTON_RANDOMIZE = 110;
+enum class IDs {
+    next_step = 101,
+    set_rules,
+    clear,
+    display_help,
+    preset_gol,
+    preset_ww,
+    timer,
+    start,
+    preset_bb,
+    randomize
+};
 
 class DrawPane : public wxPanel
 {
@@ -132,22 +134,22 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     cellRulesTxt = new wxTextCtrl(this, -1, def_rules, wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE | wxTE_LEFT);
     
     checkOverFlow = new wxCheckBox(this, -1, wxT("WRAP AROUND BORDERS"), wxDefaultPosition);
-    btnSet = new wxButton(this, BUTTON_SET_RULES, wxT("SET"));
-    btnHelp = new wxButton(this, BUTTON_DISPLAY_HELP, wxT("HELP"));
+    btnSet = new wxButton(this, IDs::set_rules, wxT("SET"));
+    btnHelp = new wxButton(this, IDs::display_help, wxT("HELP"));
     
     presetsTitle = new wxStaticText(this, -1, wxT("LOAD PRESET RULES"));
-    btnPresetGOL = new wxButton(this, BUTTON_PRESET_GOL, wxT("GAME OF LIFE"));
-    btnPresetWW = new wxButton(this, BUTTON_PRESET_WW, wxT("WIREWORLD"));
-    btnPresetBB = new wxButton(this, BUTTON_PRESET_BB, wxT("BRIAN'S BRAIN"));
+    btnPresetGOL = new wxButton(this, IDs::preset_gol, wxT("GAME OF LIFE"));
+    btnPresetWW = new wxButton(this, IDs::preset_ww, wxT("WIREWORLD"));
+    btnPresetBB = new wxButton(this, IDs::preset_bb, wxT("BRIAN'S BRAIN"));
 
     speedTxt = new wxStaticText(this, -1, wxT("SIMULATION SPEED"));
     speedSlider = new wxSlider(this, -1, 500, 100, 1000, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL);
     
-    btnStart = new wxButton(this, BUTTON_START, wxT("START"));
-    btnOneStep = new wxButton(this, BUTTON_NEXT_STEP, wxT("ONE STEP"));
+    btnStart = new wxButton(this, IDs::start, wxT("START"));
+    btnOneStep = new wxButton(this, IDs::next_step, wxT("ONE STEP"));
     
-    btnRandom = new wxButton(this, BUTTON_RANDOMIZE, wxT("RANDOMIZE BOARD"));
-    btnClear = new wxButton(this, BUTTON_CLEAR, wxT("CLEAR"));
+    btnRandom = new wxButton(this, IDs::randomize, wxT("RANDOMIZE BOARD"));
+    btnClear = new wxButton(this, IDs::clear, wxT("CLEAR"));
 
     checkOverFlow->SetValue(overflow);
 
@@ -190,7 +192,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     SetSizer(sizer);
     SetAutoLayout(true);
 
-    timer = new wxTimer(this, TIMER_ID);
+    timer = new wxTimer(this, IDs::timer);
 }
 
 void DrawPane::mouseDown(wxMouseEvent& event) {
@@ -267,15 +269,15 @@ void MainFrame::loadPreset(wxCommandEvent& event) {
     bool overflow = checkOverFlow->IsChecked();
     std::string new_defs;
     std::string new_rules;
-    if (event.GetId() == BUTTON_PRESET_GOL) {
+    if (event.GetId() == IDs::preset_gol) {
         new_defs = Presets::GOL_defs;
         new_rules = Presets::GOL_rules;
     }
-    else if (event.GetId() == BUTTON_PRESET_WW) {
+    else if (event.GetId() == IDs::preset_ww) {
         new_defs = Presets::WW_defs;
         new_rules = Presets::WW_rules;
     }
-    else if (event.GetId() == BUTTON_PRESET_BB) {
+    else if (event.GetId() == IDs::preset_bb) {
         new_defs = Presets::BB_defs;
         new_rules = Presets::BB_rules;
     }
@@ -310,16 +312,16 @@ void MainFrame::randomizeCells(wxCommandEvent& event) {
 IMPLEMENT_APP(MainApp)
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_BUTTON(BUTTON_NEXT_STEP, MainFrame::oneStepBtnEvent)
-EVT_BUTTON(BUTTON_SET_RULES, MainFrame::setRulesBtnEvent)
-EVT_BUTTON(BUTTON_DISPLAY_HELP, MainFrame::displayHelpEvent)
-EVT_BUTTON(BUTTON_PRESET_GOL, MainFrame::loadPreset)
-EVT_BUTTON(BUTTON_PRESET_WW, MainFrame::loadPreset)
-EVT_BUTTON(BUTTON_PRESET_BB, MainFrame::loadPreset)
-EVT_BUTTON(BUTTON_CLEAR, MainFrame::clearCells)
-EVT_BUTTON(BUTTON_RANDOMIZE, MainFrame::randomizeCells)
-EVT_TIMER(TIMER_ID, MainFrame::onTimer)
-EVT_BUTTON(BUTTON_START, MainFrame::timerStartStop)
+EVT_BUTTON(IDs::next_step, MainFrame::oneStepBtnEvent)
+EVT_BUTTON(IDs::set_rules, MainFrame::setRulesBtnEvent)
+EVT_BUTTON(IDs::display_help, MainFrame::displayHelpEvent)
+EVT_BUTTON(IDs::preset_gol, MainFrame::loadPreset)
+EVT_BUTTON(IDs::preset_ww, MainFrame::loadPreset)
+EVT_BUTTON(IDs::preset_bb, MainFrame::loadPreset)
+EVT_BUTTON(IDs::clear, MainFrame::clearCells)
+EVT_BUTTON(IDs::randomize, MainFrame::randomizeCells)
+EVT_TIMER(IDs::timer, MainFrame::onTimer)
+EVT_BUTTON(IDs::start, MainFrame::timerStartStop)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DrawPane, wxPanel)
