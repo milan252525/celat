@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <regex>
+#include <random>
 
 #include "automat.hpp"
 
@@ -201,4 +202,13 @@ void Automat::cellCycleType(size_t x, size_t y) {
 
 void Automat::clearCells() {
 	std::fill(cells.begin(), cells.end(), 0);
+}
+
+void Automat::randomizeCells() {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> uniform_dist(0, cellTypes.size()-1);
+	for (size_t index = 0; index < cells.size(); index++) {
+		cells.at(index) = uniform_dist(gen);
+	}
 }

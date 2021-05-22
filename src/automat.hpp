@@ -50,6 +50,7 @@ public:
     void cellCycleType(const size_t x, const size_t y);
     void clearCells();
     void doOneEvolution();
+    void randomizeCells();
 
     struct InvalidFormatException : public std::exception {
     private:

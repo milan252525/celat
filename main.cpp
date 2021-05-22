@@ -15,6 +15,7 @@ constexpr int BUTTON_PRESET_WW = 106;
 constexpr int TIMER_ID = 107;
 constexpr int BUTTON_START = 108;
 constexpr int BUTTON_PRESET_BB = 109;
+constexpr int BUTTON_RANDOMIZE = 110;
 
 
 class DrawPane : public wxPanel
@@ -76,12 +77,15 @@ private:
 
     wxButton* btnStart;
     wxButton* btnOneStep;
+
     wxButton* btnClear;
+    wxButton* btnRandom;
 
     wxBoxSizer* sizer;
     wxBoxSizer* sizerCtrlBtns;
     wxBoxSizer* sizerSetHelp;
     wxBoxSizer* sizerPresets;
+    wxBoxSizer* sizerBoardControl;
     wxFlexGridSizer* controlsSizer;
 
     wxTimer* timer;
@@ -95,6 +99,7 @@ public:
     void loadPreset(wxCommandEvent& event);
     void onTimer(wxTimerEvent& event);
     void timerStartStop(wxCommandEvent& event);
+    void randomizeCells(wxCommandEvent& event);
 
     DECLARE_EVENT_TABLE()
 };
@@ -125,9 +130,9 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     cellDefTxt = new wxTextCtrl(this, -1, def_defs, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
     
     cellRulesTitle = new wxStaticText(this, -1, wxT("RULES"));
-    cellRulesTxt = new wxTextCtrl(this, -1, def_rules, wxDefaultPosition, wxSize(300, 200), wxTE_MULTILINE | wxTE_LEFT);
+    cellRulesTxt = new wxTextCtrl(this, -1, def_rules, wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE | wxTE_LEFT);
     
-    checkOverFlow = new wxCheckBox(this, -1, wxT("OVERFLOW BORDERS"), wxDefaultPosition);
+    checkOverFlow = new wxCheckBox(this, -1, wxT("WRAP AROUND BORDERS"), wxDefaultPosition);
     btnSet = new wxButton(this, BUTTON_SET_RULES, wxT("SET"));
     btnHelp = new wxButton(this, BUTTON_DISPLAY_HELP, wxT("HELP"));
     
@@ -141,6 +146,8 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     
     btnStart = new wxButton(this, BUTTON_START, wxT("START"));
     btnOneStep = new wxButton(this, BUTTON_NEXT_STEP, wxT("ONE STEP"));
+    
+    btnRandom = new wxButton(this, BUTTON_RANDOMIZE, wxT("RANDOMIZE BOARD"));
     btnClear = new wxButton(this, BUTTON_CLEAR, wxT("CLEAR"));
 
     checkOverFlow->SetValue(overflow);
@@ -149,14 +156,17 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     sizerCtrlBtns = new wxBoxSizer(wxHORIZONTAL);
     sizerSetHelp = new wxBoxSizer(wxHORIZONTAL);
     sizerPresets = new wxBoxSizer(wxHORIZONTAL);
-    controlsSizer = new wxFlexGridSizer(11, 1, 10, 10);
+    sizerBoardControl = new wxBoxSizer(wxHORIZONTAL);
+    controlsSizer = new wxFlexGridSizer(12, 1, 10, 10);
     
     sizerSetHelp->Add(btnSet);
     sizerSetHelp->Add(btnHelp);
 
     sizerCtrlBtns->Add(btnStart);
     sizerCtrlBtns->Add(btnOneStep);
-    sizerCtrlBtns->Add(btnClear);
+
+    sizerBoardControl->Add(btnRandom);
+    sizerBoardControl->Add(btnClear);
 
     sizerPresets->Add(btnPresetGOL);
     sizerPresets->Add(btnPresetWW);
@@ -173,6 +183,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     controlsSizer->Add(speedTxt);
     controlsSizer->Add(speedSlider);
     controlsSizer->Add(sizerCtrlBtns);
+    controlsSizer->Add(sizerBoardControl);
     
     sizer->Add(drawPane, 1);
     sizer->Add(controlsSizer, 1);
@@ -292,6 +303,11 @@ void MainFrame::timerStartStop(wxCommandEvent& event) {
     }
 }
 
+void MainFrame::randomizeCells(wxCommandEvent& event) {
+    drawPane->automat->randomizeCells();
+    drawPane->paintNow();
+}
+
 IMPLEMENT_APP(MainApp)
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
@@ -302,6 +318,7 @@ EVT_BUTTON(BUTTON_PRESET_GOL, MainFrame::loadPreset)
 EVT_BUTTON(BUTTON_PRESET_WW, MainFrame::loadPreset)
 EVT_BUTTON(BUTTON_PRESET_BB, MainFrame::loadPreset)
 EVT_BUTTON(BUTTON_CLEAR, MainFrame::clearCells)
+EVT_BUTTON(BUTTON_RANDOMIZE, MainFrame::randomizeCells)
 EVT_TIMER(TIMER_ID, MainFrame::onTimer)
 EVT_BUTTON(BUTTON_START, MainFrame::timerStartStop)
 END_EVENT_TABLE()
