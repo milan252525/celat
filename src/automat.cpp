@@ -52,9 +52,11 @@ std::pair<bool, std::string> Automat::processDefinitions(const std::string& cell
 	size_t counter = 0;
 	for (std::string cellLine; std::getline(lines, cellLine); )
 	{
+		//skip empty lines
 		if (cellLine.empty()) continue;
 		try
 		{
+			//converting line into CellType structure
 			std::vector<std::string> cellSplit = Automat::splitByDelim(cellLine, ',');
 			CellType x;
 			auto& name = cellSplit.at(0);
@@ -78,14 +80,17 @@ std::pair<bool, std::string> Automat::processDefinitions(const std::string& cell
 	return { true, "" };
 }
 
+
 std::pair<bool, std::string> Automat::processRules(const std::string& rulesDefinitions) {
 	if (rulesDefinitions.empty()) return { false, "At least one rule must be defined!" };
 	std::istringstream rulesLines(rulesDefinitions);
 	for (std::string ruleLine; std::getline(rulesLines, ruleLine); )
 	{
+		//skip empty lines
 		if (ruleLine.empty()) continue;
 		try
 		{
+			//converting line into Rule structure
 			std::vector<std::string> ruleSplit = Automat::splitByDelim(ruleLine, ',');
 			Rule x;
 
@@ -93,11 +98,13 @@ std::pair<bool, std::string> Automat::processRules(const std::string& rulesDefin
 			if (!exists) return { false, ("Cell type " + ruleSplit.at(0) + " doesn't exist:\n" + ruleLine) };
 			x.originalState = index;
 
+			//each character is separate digit
 			std::string neighborCount = ruleSplit.at(1);
 			for (char& c : neighborCount) {
 				x.neighbors.push_back((unsigned int)c - (unsigned int)'0');
 			}
 
+			//always convert rule
 			if (x.neighbors.size() > 0) {
 				auto [exists2, index2] = cellNameToIndex(ruleSplit.at(2));
 				if (!exists2) return { false, ("Cell type " + ruleSplit.at(2) + " doesn't exist:\n" + ruleLine) };
@@ -125,12 +132,14 @@ std::pair<bool, size_t> Automat::cellNameToIndex(const std::string& name) const 
 }
 
 unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const size_t cellType) const {
+	//Moore neighborhood
 	int vectors[][2] = { {-1,-1}, {0,-1}, {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0} };
 	unsigned int count = 0;
 	for (auto& vector : vectors) {
 		//conversion is safe, the number will never be large enough to overflow
 		long long new_x = x + vector[0];
 		long long new_y = y + vector[1];
+		//handle overflow
 		if (new_x < 0) {
 			if (overflowEdges) new_x = width - 1;
 			else continue;
@@ -162,12 +171,15 @@ size_t Automat::getCellTypeAt(const size_t x, const size_t y) const {
 void Automat::doOneEvolution() {
 	std::vector<size_t> new_cells(cells);
 	for (size_t index = 0; index < cells.size(); index++) {
+		//convert index to coordinates
 		size_t x = index % width;
 		size_t y = index / height;
 		for (Rule& rule : rules) {
+			//only one rule gets applied
 			bool applied = false;
 			if (rule.originalState == cells.at(index)) {
 				unsigned int neighborsofType = getNeighborsOfType(x, y, rule.neighborState);
+				//empty size = always convert
 				if (rule.neighbors.size() == 0) {
 					new_cells.at(index) = rule.newState;
 					applied = true;
@@ -207,7 +219,8 @@ void Automat::clearCells() {
 void Automat::randomizeCells() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> uniform_dist(0, cellTypes.size()-1);
+	//random number [0, cellTypes.size())
+	std::uniform_int_distribution<size_t> uniform_dist(0, cellTypes.size()-1);
 	for (size_t index = 0; index < cells.size(); index++) {
 		cells.at(index) = uniform_dist(gen);
 	}

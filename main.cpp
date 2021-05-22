@@ -17,7 +17,6 @@ constexpr int BUTTON_START = 108;
 constexpr int BUTTON_PRESET_BB = 109;
 constexpr int BUTTON_RANDOMIZE = 110;
 
-
 class DrawPane : public wxPanel
 {
 private:
