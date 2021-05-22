@@ -6,7 +6,7 @@
 constexpr size_t CELL_WIDTH = 20;
 constexpr size_t GRID_WIDTH = 30;
 
-enum class IDs {
+enum IDs {
     next_step = 101,
     set_rules,
     clear,
