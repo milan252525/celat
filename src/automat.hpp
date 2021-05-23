@@ -16,7 +16,7 @@ struct CellType {
 /// @brief Structure holding automat rule
 struct Rule {
     size_t originalState;
-    std::vector<unsigned int> neighbors;
+    std::vector<unsigned int> neighbors{};
     size_t neighborState;
     size_t newState;
 };
