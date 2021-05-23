@@ -6,6 +6,7 @@
 constexpr size_t CELL_WIDTH = 20;
 constexpr size_t GRID_WIDTH = 30;
 
+//IDs for wXwidgets objects
 enum IDs {
     next_step = 101,
     set_rules,
@@ -19,6 +20,7 @@ enum IDs {
     randomize
 };
 
+//class drawing automat grid on the GUI
 class DrawPane : public wxPanel
 {
 private:
@@ -26,10 +28,16 @@ private:
 public:
     Automat* automat;
 
+    /// @brief DrawPane constructor
+    /// @param parent parent of the panel
+    /// @param size size of the panel
+    /// @param automat pointer to the automat
     DrawPane(wxFrame* parent, wxSize size, Automat *automat) :
         wxPanel(parent, -1, wxDefaultPosition, size),
         automat(automat) {
     }
+
+    //events for drawing
 
     void paintEvent(wxPaintEvent& evt) {
         wxPaintDC dc(this);
@@ -48,13 +56,16 @@ public:
     DECLARE_EVENT_TABLE()
 };
 
+//Main application
 class MainApp : public wxApp {
 public:
     virtual bool OnInit();
 };
 
+//Main application frame
 class MainFrame : public wxFrame {
 private:
+    //GUI elements
     DrawPane* drawPane;
 
     wxStaticText* cellDefTitle;
@@ -92,7 +103,12 @@ private:
     wxTimer* timer;
 
 public:
+    /// @brief Constructor of the main app frame
+    /// @param title title of the frame
+    /// @param pos position of the frame
+    /// @param size size of the frame
     MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
+    //event functions
     void oneStepBtnEvent(wxCommandEvent& event);
     void setRulesBtnEvent(wxCommandEvent& event);
     void displayHelpEvent(wxCommandEvent& event);
@@ -105,7 +121,9 @@ public:
     DECLARE_EVENT_TABLE()
 };
 
+/// @brief Function executed on start
 bool MainApp::OnInit() {
+    //calculating width, considering extra space cause by lines between cells
     int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
     MainFrame* mainWin = new MainFrame(wxT("CELAT"), wxPoint(50, 50), wxSize(1000, gridWidth));
     mainWin->Show(TRUE);
@@ -116,17 +134,19 @@ bool MainApp::OnInit() {
 MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     : wxFrame((wxFrame*)NULL, -1, title, pos, size) {
     
+    //automat construction
     bool overflow = true;
     auto& def_defs = Presets::GOL_defs;
     auto& def_rules = Presets::GOL_rules;
     Automat* automat = new Automat(GRID_WIDTH, GRID_WIDTH, def_defs, def_rules, overflow);
 
+    //drawpane
     int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
-    
     drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth), automat);
 
     SetBackgroundColour(*wxLIGHT_GREY);
 
+    //wx objects initialization
     cellDefTitle = new wxStaticText(this, -1, wxT("CELL DEFINITIONS"));
     cellDefTxt = new wxTextCtrl(this, -1, def_defs, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
     
@@ -153,13 +173,16 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 
     checkOverFlow->SetValue(overflow);
 
+    //sizers used for positioning
     sizer = new wxBoxSizer(wxHORIZONTAL);
     sizerCtrlBtns = new wxBoxSizer(wxHORIZONTAL);
     sizerSetHelp = new wxBoxSizer(wxHORIZONTAL);
     sizerPresets = new wxBoxSizer(wxHORIZONTAL);
     sizerBoardControl = new wxBoxSizer(wxHORIZONTAL);
+    //main sizer for control panel
     controlsSizer = new wxFlexGridSizer(12, 1, 10, 10);
     
+    //adding objects into sizers
     sizerSetHelp->Add(btnSet);
     sizerSetHelp->Add(btnHelp);
 
@@ -192,11 +215,12 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     SetSizer(sizer);
     SetAutoLayout(true);
 
+    //timer for automatic automat looping
     timer = new wxTimer(this, IDs::timer);
 }
 
 void DrawPane::mouseDown(wxMouseEvent& event) {
-    //automat is using opposite coordinate system
+    //automat is using inverted coordinate system
     int x = event.GetY();
     int y = event.GetX();
     int rowCell = x / CELL_WIDTH;
@@ -208,8 +232,8 @@ void DrawPane::mouseDown(wxMouseEvent& event) {
 }
 
 void DrawPane::render(wxDC& dc) {
+    //drawing each cell as a rectangle
     dc.SetPen(*wxGREY_PEN);
-
     for (size_t i = 0; i < GRID_WIDTH; i++)
     {
         for (size_t j = 0; j < GRID_WIDTH; j++)
@@ -217,18 +241,19 @@ void DrawPane::render(wxDC& dc) {
             wxColor cellColour = wxColor(automat->getColourAt(j, i));
             dc.SetBrush(wxBrush(cellColour));
             dc.DrawRectangle(wxRect(wxPoint(i * CELL_WIDTH, j * CELL_WIDTH), wxSize(CELL_WIDTH, CELL_WIDTH)));
-            //dc.DrawText(wxString(std::to_string(index)), i * CELL_WIDTH, j * CELL_WIDTH);
         }
     } 
 }
 
 void MainFrame::oneStepBtnEvent(wxCommandEvent& event) {
+    //stop timer, do evolution, redraw
     if (timer->IsRunning()) timerStartStop(event);
     drawPane->automat->doOneEvolution();
     drawPane->paintNow();
 }
 
 void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
+    //stop timer, get new rules, set new automat or display error
     if (timer->IsRunning()) timerStartStop(event);
     std::string newDefs = std::string(this->cellDefTxt->GetValue().mb_str());
     std::string newRules = std::string(this->cellRulesTxt->GetValue().mb_str());
@@ -244,6 +269,7 @@ void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
 }
 
 void MainFrame::displayHelpEvent(wxCommandEvent& event) {
+    //help button, basic info
     const char* text =
         "CELL DEFINITION FORMAT: NAME,COLOR\n"
         "NAME - any string not containing whitespace\nCOLOR - colour in hexadecimal RGB format\n"
@@ -265,10 +291,12 @@ void MainFrame::clearCells(wxCommandEvent& event) {
 }
 
 void MainFrame::loadPreset(wxCommandEvent& event) {
+    //stop timer, load automaton preset, redraw
     if (timer->IsRunning()) timerStartStop(event);
     bool overflow = checkOverFlow->IsChecked();
     std::string new_defs;
     std::string new_rules;
+
     if (event.GetId() == IDs::preset_gol) {
         new_defs = Presets::GOL_defs;
         new_rules = Presets::GOL_rules;
@@ -309,8 +337,11 @@ void MainFrame::randomizeCells(wxCommandEvent& event) {
     drawPane->paintNow();
 }
 
+//wxWidgets macro to start app
 IMPLEMENT_APP(MainApp)
 
+//event binding
+//events for main frame
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_BUTTON(IDs::next_step, MainFrame::oneStepBtnEvent)
 EVT_BUTTON(IDs::set_rules, MainFrame::setRulesBtnEvent)
@@ -323,7 +354,7 @@ EVT_BUTTON(IDs::randomize, MainFrame::randomizeCells)
 EVT_TIMER(IDs::timer, MainFrame::onTimer)
 EVT_BUTTON(IDs::start, MainFrame::timerStartStop)
 END_EVENT_TABLE()
-
+//events for DrawPane
 BEGIN_EVENT_TABLE(DrawPane, wxPanel)
 EVT_LEFT_DOWN(DrawPane::mouseDown)
 EVT_PAINT(DrawPane::paintEvent)
