@@ -156,7 +156,7 @@ unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const s
 			if (overflowEdges) new_y = 0;
 			else continue;
 		}
-		if (getCellTypeAt(new_x, new_y) == cellType) {
+		if (getCellTypeAt((size_t)new_x, (size_t)new_y) == cellType) {
 			count++;
 		}
 	}
