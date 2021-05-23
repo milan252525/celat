@@ -4,4 +4,6 @@
 
 ---
 
+msbuild celat.sln /p:Configuration=Release
+
 
