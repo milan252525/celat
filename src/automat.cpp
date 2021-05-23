@@ -137,8 +137,8 @@ unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const s
 	unsigned int count = 0;
 	for (auto& vector : vectors) {
 		//conversion is safe, the number will never be large enough to overflow
-		long long new_x = x + vector[0];
-		long long new_y = y + vector[1];
+		long long new_x = static_cast<long long>(x) + vector[0];
+		long long new_y = static_cast<long long>(y) + vector[1];
 		//handle overflow
 		if (new_x < 0) {
 			if (overflowEdges) new_x = width - 1;
@@ -156,7 +156,7 @@ unsigned int Automat::getNeighborsOfType(const size_t x, const size_t y, const s
 			if (overflowEdges) new_y = 0;
 			else continue;
 		}
-		if (getCellTypeAt(new_x, new_y) == cellType) {
+		if (getCellTypeAt(static_cast<size_t>(new_x), static_cast<size_t>(new_y)) == cellType) {
 			count++;
 		}
 	}
