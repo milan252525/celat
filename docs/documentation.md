@@ -40,6 +40,8 @@ Knihovna `automat.hpp` je navržena tak, aby byla nezávislá na zbytku aplikace
 
 Obsahuje hlavní třídu `Automat` a struktury `CellType` a `Rule` pro definice stavů a pravidel.
 
+Poznámka: Automat v uživatelském rozhraní umožňuje jen pevnou velikost 30x30 buňek a to kvůli obtížnému nastavování variabilní velikosti uživatelského rozhraní. Knihovna ovšem umožňuje jakoukoliv výšku a šířku automatu.
+
 #### Konstruktor
 
 Definice stavů a pravidel jsou poskytnuty konstruktoru třídy `Automat`. Ten je zpracuje, zkontroluje formátování, převede do struktury `CellType` nebo `Rule` a uloží do příslušného vektoru. Konstruktor dále požaduje výšku a šířku mřížky automatu a boolean, indikující zda automat na hranách přetéká.
@@ -60,13 +62,23 @@ Dále obsahuje funkce pro obsluhu:
 
 `std::string getColourAt(const size_t x, const size_t y) const` vrátí string obsahující barvu buňky v hexadecimálním formátu.
 
+`void cellCycleType(const size_t x, const size_t y)` změní typ buňky na další v pořadí, céž je vhodné pro uživatelské rozhraní.
+
+`void clearCells()` a `void randomizeCells()` změní typ buňek na defultní nebo náhodný.
+
 ## Uživatelské rozhraní
 
-Poznámka: Automat v uživatelském rozhraní umožňuje jen pevnou velikost 30x30 buňek a to kvůli obtížnému nastavování velikosti uživatelského rozhraní. Knihovna ovšem umožňuje jakoukoliv výšku a šířku automatu.
+Knihovna použita pro uživatelské rozhraní se nazývá wxWidgets [[5]](#zdroje). 
 
 ## Distribuce
 
+Nejdříve jsem chtěl aplikaci sestavovat pomocí CMake a vyzkoušel jsem různé GUI knihovny (např SFML, Qt), ovšem se mi nepodařilo zprovoznit ani jednu. Rozhodl jsem se proto vyvíjet ve Visual Studiu 2019, kde se mi podařilo zprovoznit právě wxWidgets.
 
+Projekt jsme se rozhodl distribuovat pomocí projektu pro VS (.sln). V uživatelské dokumentaci je návod na instalování a sestavení pomocí příkazové řádky.
+
+Nevýhodou této knihovny je velikost po kompilaci. Dosahuje skoro 2GB a to jenom verze pro Windows (x64 a x86). V průběhu vývoje jsem musel změnit verzovací systém z GitHub na Gitlab, kvůli limitu velikosti souborů. Pro ušetření času stahování a nahrávání jsem musel přistoupit ke zkomprimování knihovny do archivu ZIP.
+
+Přišlo mi to jako přijatelné řešení oproti nucení uživatele, aby si knihovnu stáhnul a zkompiloval sám.
 
 ## Zdroje
 
@@ -77,6 +89,8 @@ Poznámka: Automat v uživatelském rozhraní umožňuje jen pevnou velikost 30x
 [3] [Brian's Brain - Wikipedia](https://en.wikipedia.org/wiki/Brian%27s_Brain)
 
 [4] [Moorovo okolí – Wikipedie](https://cs.wikipedia.org/wiki/Moorovo_okol%C3%AD)
+
+[5] [wxWidgets](https://wxwidgets.org/)
 
 ## Obrázky
 
