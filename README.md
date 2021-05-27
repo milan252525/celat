@@ -40,6 +40,10 @@ In case you use normal Command prompt you will have to locate where msbuild is i
 
 You can additionally specify platform with`/p:Platform=x86` argument. Available options are `x64` (32-bit) and `x86` (64-bit).
 
+
+
+Alternatively you can download Windows executables from this [release](https://gitlab.mff.cuni.cz/abraham1/celat/-/releases/v1).
+
 ## Usage
 
 <img title="" src="docs/images/celat.png" alt="">
