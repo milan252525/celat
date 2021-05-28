@@ -72,7 +72,7 @@ Knihovna použita pro uživatelské rozhraní se nazývá wxWidgets [[5]](#zdroj
 
 Asi nejsložitější poté bylo vytvořit mřížku automatu, která by umožňovala rychlé překreslování a interakci s uživatelem. Nejdříve jsem vyzkoušel wxGrid, což je mřížka velice podobná například tabulce v Excelu. Ukázala se být nevhodná, protože buňky nešly zmenšit na požadovanou velikost.
 
-Jako vhodné řešení se ukázal wxPanel (běžný panel sloužící k seskupení a ovládání prvků). Nad tím je potřeba sestrojit objekt wxPaintDC, který umožňuje kreslení na prvek, nad kterým je sestrojen. Poté je kreslení řešeno pomocí eventů. Zorbrazení mřížky je vcelku jednoduše realizováno kreslením čtverců příslušné barvy. Při kliknutí na mřížku se vypočtou souřadnice buňky a ty jsou předány automatu.
+Jako vhodné řešení se ukázal wxPanel (běžný panel sloužící k seskupení a ovládání prvků). Nad tím je potřeba sestrojit objekt wxPaintDC, který umožňuje kreslení na prvek, nad kterým je sestrojen. Poté je kreslení řešeno pomocí eventů. Zobrazení mřížky je vcelku jednoduše realizováno kreslením čtverců příslušné barvy. Při kliknutí na mřížku se vypočtou souřadnice buňky a ty jsou předány automatu.
 
 ## Distribuce
 
