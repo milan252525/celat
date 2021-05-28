@@ -8,7 +8,7 @@ Cílem práce je vytvořit univerzální celulární automat, kterému lze speci
 
 ## Úvod
 
-Program napsaný v jazyce C++ obsahuje uživatelské rozhraní, jehož součástí je reprezentace automatu a ovládací prvky. Stavy(buňky) jsou reprezentovány v mřížce 30x30, buňky mají rozdílné barvy definované uživatelem. V ovládacím panelu uživatel upravuje chování automatu pomocí definice buňek, pravidel a dalších nastavení. 
+Program napsaný v jazyce C++ obsahuje uživatelské rozhraní, jehož součástí je reprezentace automatu a ovládací prvky. Stavy (buňky) jsou reprezentovány v mřížce 30x30, buňky mají rozdílné barvy definované uživatelem. V ovládacím panelu uživatel upravuje chování automatu pomocí definice buňek, pravidel a dalších nastavení. 
 
 Součástí projektu je uživatelská dokumentace obsahující návod k instalaci a sestavení, vysvětlení použití automatu a formátu pravidel. Aplikace obsahuje tři předefinované automaty a to Game of Life [[1]](#zdroje), Wireworld [[2]](#zdroje) a Brian's Brain [[3]](#zdroje).
 
@@ -18,7 +18,7 @@ Projekt jsem rozdělil na dvě hlavní části - knihovna implementující unive
 
 ## Pravidla
 
-Nejdříve jsem si prošel běžné automaty a analyzoval jejich pravidla. Existuje velké množství automatů, každý obsahující trochu jiná pravidla a funkčnost. Některé automaty jsou velmi rozdílné a nebylo možné nalézt podobnost v jejich pravidlech. Ovšem velkou podmnožinu automatů lze definovat dvěmy typy pravidel:
+Nejdříve jsem si prošel běžné automaty a analyzoval jejich pravidla. Existuje velké množství automatů, každý ovládaný jinými pravidly. Některé automaty jsou velmi rozdílné a nebylo možné nalézt podobnost v jejich pravidlech. Ovšem velkou podmnožinu automatů lze definovat dvěma typy pravidel:
 
 1. Pokuď buňka se stavem A má X sousedů se stavem B změn její stav na C.
 
@@ -46,13 +46,13 @@ Poznámka: Automat v uživatelském rozhraní umožňuje jen pevnou velikost 30x
 
 Definice stavů a pravidel jsou poskytnuty konstruktoru třídy `Automat`. Ten je zpracuje, zkontroluje formátování, převede do struktury `CellType` nebo `Rule` a uloží do příslušného vektoru. Konstruktor dále požaduje výšku a šířku mřížky automatu a boolean, indikující zda automat na hranách přetéká.
 
-Pravidla mají formát, který je potřeba striktně dodržovat. Je popsán v uživatelské dokumentaci. Pokud je nalezena chyba je vyvolána výjimka ``Automat::InvalidFormatException`` obsahující chybovou zprávu. Pokud je tato výjimka vyvolána objekt se nevytvoří a je potřeba zavolat konstruktor znovu se spravným formátem pravidel. 
+Pravidla mají formát, který je potřeba striktně dodržovat. Je popsán v uživatelské dokumentaci. Pokud je nalezena chyba je vyvolána výjimka ``Automat::InvalidFormatException`` obsahující chybovou zprávu. Pokud je tato výjimka vyvolána, objekt se nevytvoří a je potřeba zavolat konstruktor znovu se spravným formátem pravidel. 
 
-Poté co se zpracují pravidla, inicializují se všechny potřebné struktury. Tou hlavní je `std::vector<size_t> cells`, pole obsahující všechny buňky automatu. Buňky mají defaultní hodnotu, tou je první definovaný typ buňky. Pole obsahuje indexy typů ve vektoru `std::vector<CellType> cellTypes`. Používány jsou indexy místo pointerů pro rychlejší měnění stavů, mazání a randomizaci.
+Poté, co se zpracují pravidla, se inicializují všechny potřebné struktury. Tou hlavní je `std::vector<size_t> cells`, pole obsahující všechny buňky automatu. Buňky mají defaultní hodnotu, tou je první definovaný typ buňky. Pole obsahuje indexy typů ve vektoru `std::vector<CellType> cellTypes`. Používány jsou indexy místo pointerů pro rychlejší měnění stavů, mazání a randomizaci.  
 
 #### Souřadnice
 
-Buňky jsou sice interně ukládány do 1-rozměrného pole, ovšem veřejné funkce poskytují přístup pomocí souřadnicového systému. Osa X je vertikální, Y horizontální. Nejlevější horní buňka má souřadnice 0, 0. Souřadnice dolů a doprava se zvyšují.  
+Buňky jsou sice interně ukládány do 1-rozměrného pole, ovšem rozhraní třídy poskytujíe přístup pomocí souřadnicového systému. Osa X je vertikální, Y horizontální. Nejlevější horní buňka má souřadnice 0, 0. Souřadnice se zvyšují dolů a doprava.  
 
 #### Funkce automatu
 
@@ -68,17 +68,25 @@ Dále obsahuje funkce pro obsluhu:
 
 ## Uživatelské rozhraní
 
-Knihovna použita pro uživatelské rozhraní se nazývá wxWidgets [[5]](#zdroje). 
+Knihovna použita pro uživatelské rozhraní se nazývá wxWidgets [[5]](#zdroje). Umožňuje vcelku přímočaré vytvoření prvků uživatelského rozhraní a následné propojení s událostmi.  Trochu složité je poté rozmístění prvků. Je realizováno pomocí tzv. sizerů. Sizer umožňuje rozmístění horizontálně nebo vertikálně. Proto jich bylo potřeba zkombinovat více k dosažení finálního výsledku.
+
+Asi nejsložitější poté bylo vytvořit mřížku automatu, která by umožňovala rychlé překreslování a interakci s uživatelem. Nejdříve jsem vyzkoušel wxGrid, což je mřížka velice podobná například tabulce v Excelu. Ukázala se být nevhodná, protože buňky nešly zmenšit na požadovanou velikost.
+
+Jako vhodné řešení se ukázal wxPanel (běžný panel sloužící k seskupení a ovládání prvků). Nad tím je potřeba sestrojit objekt wxPaintDC, který umožňuje kreslení na prvek, nad kterým je sestrojen. Poté je kreslení řešeno pomocí eventů. Zorbrazení mřížky je vcelku jednoduše realizováno kreslením čtverců příslušné barvy. Při kliknutí na mřížku se vypočtou souřadnice buňky a ty jsou předány automatu.
 
 ## Distribuce
 
-Nejdříve jsem chtěl aplikaci sestavovat pomocí CMake a vyzkoušel jsem různé GUI knihovny (např SFML, Qt), ovšem se mi nepodařilo zprovoznit ani jednu. Rozhodl jsem se proto vyvíjet ve Visual Studiu 2019, kde se mi podařilo zprovoznit právě wxWidgets.
+Nejdříve jsem chtěl aplikaci sestavovat pomocí CMake a vyzkoušel jsem různé GUI knihovny (např SFML, Qt), ovšem nepodařilo se mi zprovoznit ani jednu. Rozhodl jsem se proto vyvíjet ve Visual Studiu 2019, kde se mi podařilo zprovoznit právě wxWidgets.
 
-Projekt jsme se rozhodl distribuovat pomocí projektu pro VS (.sln). V uživatelské dokumentaci je návod na instalování a sestavení pomocí příkazové řádky.
+Projekt jsme se rozhodl distribuovat pomocí projektu pro Visual Studio (.sln). V uživatelské dokumentaci je návod na instalování a sestavení pomocí příkazové řádky.
 
 Nevýhodou této knihovny je velikost po kompilaci. Dosahuje skoro 2GB a to jenom verze pro Windows (x64 a x86). V průběhu vývoje jsem musel změnit verzovací systém z GitHub na Gitlab, kvůli limitu velikosti souborů. Pro ušetření času stahování a nahrávání jsem musel přistoupit ke zkomprimování knihovny do archivu ZIP.
 
 Přišlo mi to jako přijatelné řešení oproti nucení uživatele, aby si knihovnu stáhnul a zkompiloval sám.
+
+## Závěr
+
+Podařilo se mi vytvořit funkční univerzální celulární automat a implementovat v něm 3 různé automaty. I přes značné počáteční problémy s knihovnami pro uživatelské rozhraní jsem s výsledkem spokojen. Podle mého názoru jsou však jiné jazyky jako například C# nebo Java vhodnější pro vytváření uživatelského rozhraní. Znovu bych už C++ pro GUI nepoužil. Přesto se mi podařilo obohatit mé znalosti jazyka.
 
 ## Zdroje
 
@@ -95,5 +103,3 @@ Přišlo mi to jako přijatelné řešení oproti nucení uživatele, aby si kni
 ## Obrázky
 
 [Moorovo okolí](https://cs.wikipedia.org/wiki/Moorovo_okol%C3%AD#/media/Soubor:Moore_neighborhood_with_cardinal_directions.svg)
-
-
