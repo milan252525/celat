@@ -134,7 +134,7 @@ Dead cell becomes alive if it has  two alive neighbours.
 
 This automaton almost always results in chaotic growth, randomizing the board is recommended with this one.
 
-<br>
+
 
 ### Other functionalities
 
