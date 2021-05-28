@@ -14,7 +14,9 @@ Součástí projektu je uživatelská dokumentace obsahující návod k instalac
 
 Projekt jsem rozdělil na dvě hlavní části - knihovna implementující univerzální automat a uživatelské rozhraní používající tuto knihovnu.
 
-**Ukázka rozhraní:**<img title="" src="images/celat.png" alt="" width="590">
+**Ukázka rozhraní:**
+
+<img title="" src="images/celat.png" alt="" width="590">
 
 ## Pravidla
 
