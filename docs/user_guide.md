@@ -38,9 +38,7 @@ In case you use normal Command prompt you will have to locate where msbuild is i
 
 `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe`
 
-You can additionally specify platform with`/p:Platform=x86` argument. Available options are `x64` (32-bit) and `x86` (64-bit).
-
-
+You can additionally specify platform with`/p:Platform=x86` argument. Available options are `x64` (64-bit) and `x86` (32-bit).
 
 Alternatively you can download Windows executables from this [release](https://gitlab.mff.cuni.cz/abraham1/celat/-/releases/v1).
 
@@ -135,6 +133,8 @@ Alive cell always becomes dying, dying always becomes dead.
 Dead cell becomes alive if it has  two alive neighbours.
 
 This automaton almost always results in chaotic growth, randomizing the board is recommended with this one.
+
+<br>
 
 ### Other functionalities
 
