@@ -25,7 +25,7 @@ enum class IDs {
 class DrawPane : public wxPanel
 {
 private:
-    
+
 public:
     Automat* automat;
 
@@ -50,7 +50,14 @@ public:
         render(dc);
     }
 
+    void paintCellAt(int rowCell, int colCell) {
+        wxClientDC dc(this);
+        renderAt(dc, rowCell, colCell);
+    }
+
     void render(wxDC& dc);
+
+    void renderAt(wxDC& dc, int rowCell, int colCell);
 
     void mouseDown(wxMouseEvent& event);
  
@@ -248,7 +255,7 @@ void DrawPane::mouseDown(wxMouseEvent& event) {
     int colCell = y / CELL_WIDTH;
     if (rowCell >= 0 && colCell >= 0 && rowCell < GRID_WIDTH && colCell < GRID_WIDTH) {
         automat->cellCycleType(rowCell, colCell);
-        paintNow();
+        paintCellAt(rowCell, colCell);
     }
 }
 
@@ -264,6 +271,13 @@ void DrawPane::render(wxDC& dc) {
             dc.DrawRectangle(wxRect(wxPoint(i * CELL_WIDTH, j * CELL_WIDTH), wxSize(CELL_WIDTH, CELL_WIDTH)));
         }
     } 
+}
+
+void DrawPane::renderAt(wxDC& dc, int rowCell, int colCell) {
+    dc.SetPen(*wxGREY_PEN);
+    wxColor cellColour = wxColor(automat->getColourAt(rowCell, colCell));
+    dc.SetBrush(wxBrush(cellColour));
+    dc.DrawRectangle(wxRect(wxPoint(colCell * CELL_WIDTH, rowCell * CELL_WIDTH), wxSize(CELL_WIDTH, CELL_WIDTH)));
 }
 
 void MainFrame::oneStepBtnEvent(wxCommandEvent& event) {
