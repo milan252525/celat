@@ -64,7 +64,7 @@ std::pair<bool, std::string> Automat::processDefinitions(const std::string& cell
 			x.name = name;
 			x.colour = "#" + cellSplit.at(1);
 			if (!std::regex_match(x.colour, std::regex("^#[A-Fa-f0-9]{6}$"))) {
-				return { false, "Invalid colour at line: (Correct example: #FF0055)\n" + cellLine };
+				return { false, "Invalid colour at line: (Correct example: FF0055)\n" + cellLine };
 			}
 			cellTypes.push_back(x);
 			auto [_, inserted] = name_to_index.insert_or_assign(x.name, counter);
