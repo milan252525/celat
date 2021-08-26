@@ -72,7 +72,10 @@ std::pair<bool, std::string> Automat::processDefinitions(const std::string& cell
 				probability = cellSplit.at(2);
 			}
 			if (!probability.empty()) {
-				x.probability = std::stoi(cellSplit.at(2));
+				try { x.probability = std::stoi(cellSplit.at(2)); }
+				catch (const std::invalid_argument&) { 
+					return { false, "Invalid probability at line: (Use integers 0-100)\n" + cellLine };
+				}
 				if (x.probability < 0 || x.probability > 100) return { false, "Invalid probability at line: (Use integers 0-100)\n" + cellLine };
 				if (probability_total + x.probability > 100) return { false, "Your probabilities sum up to over 100!"};
 				probability_total += x.probability;
@@ -115,6 +118,7 @@ std::pair<bool, std::string> Automat::processRules(const std::string& rulesDefin
 			//each character is separate digit
 			std::string neighborCount = ruleSplit.at(1);
 			for (char& c : neighborCount) {
+				if (!std::isdigit(c)) return { false, ("Non digit character '" + std::string(1, c) + "' at neighbor count:\n" + ruleLine) };
 				x.neighbors.push_back((unsigned int)c - (unsigned int)'0');
 			}
 
