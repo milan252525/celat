@@ -130,7 +130,7 @@ public:
 bool MainApp::OnInit() {
     //calculating width, considering extra space cause by lines between cells
     int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
-    MainFrame* mainWin = new MainFrame(wxT("CELAT"), wxPoint(50, 50), wxSize(1000, gridWidth));
+    MainFrame* mainWin = new MainFrame(wxString("CELAT"), wxPoint(50, 50), wxSize(1000, gridWidth));
     mainWin->Show(TRUE);
     SetTopWindow(mainWin);
     return TRUE;
@@ -138,31 +138,31 @@ bool MainApp::OnInit() {
 
 void MainFrame::createUIElements(const std::string& cellDefinitions, const std::string& rulesDefinitions) {
     //wx objects initialization
-    cellDefTitle = new wxStaticText(this, (int)IDs::default_id, wxT("CELL DEFINITIONS"));
+    cellDefTitle = new wxStaticText(this, (int)IDs::default_id, wxString("CELL DEFINITIONS"));
     cellDefTxt = new wxTextCtrl(this, (int)IDs::default_id, cellDefinitions, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
 
-    cellRulesTitle = new wxStaticText(this, (int)IDs::default_id, wxT("RULES"));
+    cellRulesTitle = new wxStaticText(this, (int)IDs::default_id, wxString("RULES"));
     cellRulesTxt = new wxTextCtrl(this, (int)IDs::default_id, rulesDefinitions, wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE | wxTE_LEFT);
 
-    checkOverFlow = new wxCheckBox(this, (int)IDs::default_id, wxT("WRAP AROUND BORDERS"), wxDefaultPosition);
+    checkOverFlow = new wxCheckBox(this, (int)IDs::default_id, wxString("WRAP AROUND BORDERS"), wxDefaultPosition);
     checkOverFlow->SetValue(true);
 
-    btnSet = new wxButton(this, (int)IDs::set_rules, wxT("SET"));
-    btnHelp = new wxButton(this, (int)IDs::display_help, wxT("HELP"));
+    btnSet = new wxButton(this, (int)IDs::set_rules, wxString("SET"));
+    btnHelp = new wxButton(this, (int)IDs::display_help, wxString("HELP"));
 
-    presetsTitle = new wxStaticText(this, (int)IDs::default_id, wxT("LOAD PRESET RULES"));
-    btnPresetGOL = new wxButton(this, (int)IDs::preset_gol, wxT("GAME OF LIFE"));
-    btnPresetWW = new wxButton(this, (int)IDs::preset_ww, wxT("WIREWORLD"));
-    btnPresetBB = new wxButton(this, (int)IDs::preset_bb, wxT("BRIAN'S BRAIN"));
+    presetsTitle = new wxStaticText(this, (int)IDs::default_id, wxString("LOAD PRESET RULES"));
+    btnPresetGOL = new wxButton(this, (int)IDs::preset_gol, wxString("GAME OF LIFE"));
+    btnPresetWW = new wxButton(this, (int)IDs::preset_ww, wxString("WIREWORLD"));
+    btnPresetBB = new wxButton(this, (int)IDs::preset_bb, wxString("BRIAN'S BRAIN"));
 
-    speedTxt = new wxStaticText(this, (int)IDs::default_id, wxT("SIMULATION SPEED"));
+    speedTxt = new wxStaticText(this, (int)IDs::default_id, wxString("SIMULATION SPEED"));
     speedSlider = new wxSlider(this, (int)IDs::default_id, 500, 100, 1000, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL);
 
-    btnStart = new wxButton(this, (int)IDs::start, wxT("START"));
-    btnOneStep = new wxButton(this, (int)IDs::next_step, wxT("ONE STEP"));
+    btnStart = new wxButton(this, (int)IDs::start, wxString("START"));
+    btnOneStep = new wxButton(this, (int)IDs::next_step, wxString("ONE STEP"));
 
-    btnRandom = new wxButton(this, (int)IDs::randomize, wxT("RANDOMIZE BOARD"));
-    btnClear = new wxButton(this, (int)IDs::clear, wxT("CLEAR"));
+    btnRandom = new wxButton(this, (int)IDs::randomize, wxString("RANDOMIZE BOARD"));
+    btnClear = new wxButton(this, (int)IDs::clear, wxString("CLEAR"));
 }
 
 void MainFrame::createSizers() {
@@ -285,7 +285,7 @@ void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
     }
     catch (const Automat::InvalidFormatException& e) {
         auto error = e.what();
-        wxMessageBox(wxString::FromUTF8(error), wxT("Format error"), wxICON_ERROR);
+        wxMessageBox(wxString(error), wxString("Format error"), wxICON_ERROR);
     }
 }
 
@@ -303,7 +303,7 @@ void MainFrame::displayHelpEvent(wxCommandEvent& event) {
         "EXAMPLE: ALIVE,01,ALIVE,DEAD\n"
         "NOTE: leave NEIGHBOUR_AMOUNT empty to always transfer\n"
         "NOTE: NEIGHBOUR_AMOUNT can contain multiple digits";
-    wxMessageBox(wxString::FromUTF8(text), wxT("Help"), wxICON_INFORMATION);
+    wxMessageBox(wxString::FromUTF8(text), wxString("Help"), wxICON_INFORMATION);
 }
 
 void MainFrame::clearCells(wxCommandEvent& event) {
