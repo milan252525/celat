@@ -303,7 +303,7 @@ void MainFrame::displayHelpEvent(wxCommandEvent& event) {
         "EXAMPLE: ALIVE,01,ALIVE,DEAD\n"
         "NOTE: leave NEIGHBOUR_AMOUNT empty to always transfer\n"
         "NOTE: NEIGHBOUR_AMOUNT can contain multiple digits";
-    wxMessageBox(wxString::FromUTF8(text), wxString("Help"), wxICON_INFORMATION);
+    wxMessageBox(wxString(text), wxString("Help"), wxICON_INFORMATION);
 }
 
 void MainFrame::clearCells(wxCommandEvent& event) {
