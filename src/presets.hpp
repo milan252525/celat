@@ -30,8 +30,8 @@ struct Presets {
 
 	/// @brief Brian's Brain definitions
 	inline static std::string BB_defs =
-		"DEAD,000000\n"
-		"ALIVE,FFFFFF\n"
+		"DEAD,000000,50\n"
+		"ALIVE,FFFFFF,50\n"
 		"DYING,AAAAAA";
 
 	/// @brief Brian's Brain rules
