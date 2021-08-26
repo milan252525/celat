@@ -292,9 +292,11 @@ void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
 void MainFrame::displayHelpEvent(wxCommandEvent& event) {
     //help button, basic info
     const char* text =
-        "CELL DEFINITION FORMAT: NAME,COLOR\n"
+        "CELL DEFINITION FORMAT: NAME,COLOR,PROBABILITY\n"
         "NAME - any string not containing whitespace\nCOLOR - colour in hexadecimal RGB format\n"
-        "EXAMPLE: DEAD,FF0055\n\n"
+        "PROBABILITY - probability of cell spawning after randomization (0-100)\n"
+        "EXAMPLE: DEAD,FF0055,25\n"
+        "NOTE: PROBABILITY can be left empty for uniform distributon of all unspecified cell types\n\n"
         "RULE FORMAT: CURRENT_STATE,NEIGHBOUR_AMOUNT,NEIGHBOUR_STATE,NEW_STATE\n"
         "CURRENT_STATE - cell state the rule is applied to\n"
         "NEIGHBOUR_AMOUNT - amount of neighbours with NEIGHBOUR_STATE\n"

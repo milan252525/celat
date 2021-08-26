@@ -233,9 +233,45 @@ void Automat::clearCells() {
 void Automat::randomizeCells() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	//random number [0, cellTypes.size())
-	std::uniform_int_distribution<size_t> uniform_dist(0, cellTypes.size()-1);
+
+	std::uniform_int_distribution<size_t> uniform_dist(0, 100 - 1);
+
+	//fill randomArray with 100 cell type (each probability times)
+	//some may have probability undefined, all those will have same probability
+	size_t randomArray [100];
+	int noProbCount = 0;
+	int totalProb = 0;
+
+	for (CellType& ctype : cellTypes) {
+		if (ctype.probability == -1) ++noProbCount;
+		else totalProb += ctype.probability;
+	}
+
+	int undefProb = (100 - totalProb) / noProbCount;
+
+	int count = 0;
+	for (size_t typeIndex = 0; typeIndex < cellTypes.size(); typeIndex++) {
+		if (cellTypes[typeIndex].probability != -1) {
+			for (int i = 0; i < cellTypes[typeIndex].probability; i++) {
+				randomArray[count + i] = typeIndex;
+			}
+			count += cellTypes[typeIndex].probability;
+		}
+		else {
+			for (int i = 0; i < undefProb; i++) {
+				randomArray[count + i] = typeIndex;
+			}
+			count += undefProb;
+		}
+	}
+	//very few randomArray fields may remain empty due to rounding errors, fill them with first type
+	while (count < 100) {
+		randomArray[count] = 0;
+		count++;
+	}
+
+	//populate cells randomly
 	for (size_t index = 0; index < cells.size(); index++) {
-		cells.at(index) = uniform_dist(gen);
+		cells.at(index) = randomArray[uniform_dist(gen)];
 	}
 }
