@@ -8,6 +8,7 @@ constexpr size_t GRID_WIDTH = 30;
 
 //IDs for wxWidgets objects
 enum class IDs {
+    default_id = -1,
     next_step = 101,
     set_rules,
     clear,
@@ -33,7 +34,7 @@ public:
     /// @param size size of the panel
     /// @param automat pointer to the automat
     DrawPane(wxFrame* parent, wxSize size, Automat *automat) :
-        wxPanel(parent, -1, wxDefaultPosition, size),
+        wxPanel(parent, (int)IDs::default_id, wxDefaultPosition, size),
         automat(automat) {
     }
 
@@ -102,6 +103,10 @@ private:
 
     wxTimer* timer;
 
+    void createUIElements(const std::string& cellDefinitions, const std::string& rulesDefinitions);
+    void createSizers();
+    void populateSizers();
+
 public:
     /// @brief Constructor of the main app frame
     /// @param title title of the frame
@@ -131,48 +136,36 @@ bool MainApp::OnInit() {
     return TRUE;
 }
 
-MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-    : wxFrame((wxFrame*)NULL, -1, title, pos, size) {
-    
-    //automat construction
-    bool overflow = true;
-    auto& def_defs = Presets::GOL_defs;
-    auto& def_rules = Presets::GOL_rules;
-    Automat* automat = new Automat(GRID_WIDTH, GRID_WIDTH, def_defs, def_rules, overflow);
-
-    //drawpane
-    int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
-    drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth), automat);
-
-    SetBackgroundColour(*wxLIGHT_GREY);
-
+void MainFrame::createUIElements(const std::string& cellDefinitions, const std::string& rulesDefinitions) {
     //wx objects initialization
-    cellDefTitle = new wxStaticText(this, -1, wxT("CELL DEFINITIONS"));
-    cellDefTxt = new wxTextCtrl(this, -1, def_defs, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
-    
-    cellRulesTitle = new wxStaticText(this, -1, wxT("RULES"));
-    cellRulesTxt = new wxTextCtrl(this, -1, def_rules, wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE | wxTE_LEFT);
-    
-    checkOverFlow = new wxCheckBox(this, -1, wxT("WRAP AROUND BORDERS"), wxDefaultPosition);
+    cellDefTitle = new wxStaticText(this, (int)IDs::default_id, wxT("CELL DEFINITIONS"));
+    cellDefTxt = new wxTextCtrl(this, (int)IDs::default_id, cellDefinitions, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
+
+    cellRulesTitle = new wxStaticText(this, (int)IDs::default_id, wxT("RULES"));
+    cellRulesTxt = new wxTextCtrl(this, (int)IDs::default_id, rulesDefinitions, wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE | wxTE_LEFT);
+
+    checkOverFlow = new wxCheckBox(this, (int)IDs::default_id, wxT("WRAP AROUND BORDERS"), wxDefaultPosition);
+    checkOverFlow->SetValue(true);
+
     btnSet = new wxButton(this, (int)IDs::set_rules, wxT("SET"));
     btnHelp = new wxButton(this, (int)IDs::display_help, wxT("HELP"));
-    
-    presetsTitle = new wxStaticText(this, -1, wxT("LOAD PRESET RULES"));
+
+    presetsTitle = new wxStaticText(this, (int)IDs::default_id, wxT("LOAD PRESET RULES"));
     btnPresetGOL = new wxButton(this, (int)IDs::preset_gol, wxT("GAME OF LIFE"));
     btnPresetWW = new wxButton(this, (int)IDs::preset_ww, wxT("WIREWORLD"));
     btnPresetBB = new wxButton(this, (int)IDs::preset_bb, wxT("BRIAN'S BRAIN"));
 
-    speedTxt = new wxStaticText(this, -1, wxT("SIMULATION SPEED"));
-    speedSlider = new wxSlider(this, -1, 500, 100, 1000, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL);
-    
+    speedTxt = new wxStaticText(this, (int)IDs::default_id, wxT("SIMULATION SPEED"));
+    speedSlider = new wxSlider(this, (int)IDs::default_id, 500, 100, 1000, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL);
+
     btnStart = new wxButton(this, (int)IDs::start, wxT("START"));
     btnOneStep = new wxButton(this, (int)IDs::next_step, wxT("ONE STEP"));
-    
+
     btnRandom = new wxButton(this, (int)IDs::randomize, wxT("RANDOMIZE BOARD"));
     btnClear = new wxButton(this, (int)IDs::clear, wxT("CLEAR"));
+}
 
-    checkOverFlow->SetValue(overflow);
-
+void MainFrame::createSizers() {
     //sizers used for positioning
     sizer = new wxBoxSizer(wxHORIZONTAL);
     sizerCtrlBtns = new wxBoxSizer(wxHORIZONTAL);
@@ -180,8 +173,14 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     sizerPresets = new wxBoxSizer(wxHORIZONTAL);
     sizerBoardControl = new wxBoxSizer(wxHORIZONTAL);
     //main sizer for control panel
-    controlsSizer = new wxFlexGridSizer(12, 1, 10, 10);
-    
+    int rows = 12;
+    int columns = 1;
+    int vgap = 10;
+    int hgap = 10;
+    controlsSizer = new wxFlexGridSizer(rows, columns, vgap, hgap);
+}
+
+void MainFrame::populateSizers() {
     //adding objects into sizers
     sizerSetHelp->Add(btnSet);
     sizerSetHelp->Add(btnHelp);
@@ -208,12 +207,34 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     controlsSizer->Add(speedSlider);
     controlsSizer->Add(sizerCtrlBtns);
     controlsSizer->Add(sizerBoardControl);
-    
+
     sizer->Add(drawPane, 1);
     sizer->Add(controlsSizer, 1);
 
     SetSizer(sizer);
     SetAutoLayout(true);
+}
+
+MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
+    : wxFrame((wxFrame*)NULL, (int)IDs::default_id, title, pos, size) {
+    
+    //automat construction
+    bool overflow = true;
+    auto& def_defs = Presets::GOL_defs;
+    auto& def_rules = Presets::GOL_rules;
+    Automat* automat = new Automat(GRID_WIDTH, GRID_WIDTH, def_defs, def_rules, overflow);
+
+    //drawpane
+    int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
+    drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth), automat);
+
+    SetBackgroundColour(*wxLIGHT_GREY);
+    
+    createUIElements(def_defs, def_rules);
+
+    createSizers();
+
+    populateSizers();
 
     //timer for automatic automat looping
     timer = new wxTimer(this, (int)IDs::timer);
