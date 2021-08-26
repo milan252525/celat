@@ -50,6 +50,7 @@ std::pair<bool, std::string> Automat::processDefinitions(const std::string& cell
 	if (cellDefinitions.empty()) return { false, "At least two cell types must be defined!"};
 	std::istringstream lines(cellDefinitions);
 	size_t counter = 0;
+	int probability_total = 0;
 	for (std::string cellLine; std::getline(lines, cellLine); )
 	{
 		//skip empty lines
@@ -65,6 +66,19 @@ std::pair<bool, std::string> Automat::processDefinitions(const std::string& cell
 			x.colour = "#" + cellSplit.at(1);
 			if (!std::regex_match(x.colour, std::regex("^#[A-Fa-f0-9]{6}$"))) {
 				return { false, "Invalid colour at line: (Correct example: FF0055)\n" + cellLine };
+			}
+			std::string probability;
+			if (cellSplit.size() > 2) {
+				probability = cellSplit.at(2);
+			}
+			if (!probability.empty()) {
+				x.probability = std::stoi(cellSplit.at(2));
+				if (x.probability < 0 || x.probability > 100) return { false, "Invalid probability at line: (Use integers 0-100)\n" + cellLine };
+				if (probability_total + x.probability > 100) return { false, "Your probabilities sum up to over 100!"};
+				probability_total += x.probability;
+			}
+			else {
+				x.probability = -1;
 			}
 			cellTypes.push_back(x);
 			auto [_, inserted] = name_to_index.insert_or_assign(x.name, counter);

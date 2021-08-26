@@ -11,6 +11,7 @@
 struct CellType {
     std::string name;
     std::string colour;
+    int probability;
 };
 
 /// @brief Structure holding automat rule
