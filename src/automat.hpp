@@ -28,10 +28,6 @@ private:
     std::vector<Rule> rules;
     /// @brief vector of cell definitions
     std::vector<CellType> cellTypes;
-    /// @brief width of the automat
-    size_t width;
-    /// @brief height of the automat
-    size_t height;
 
     /// @brief wrap around borders
     bool overflowEdges;
@@ -78,6 +74,11 @@ public:
     /// @param rulesDefinitions string of rules, separated by newline
     /// @param overflowEdges wrap around borders
     Automat(const size_t width, const size_t height, const std::string& cellDefinitions, const std::string& rulesDefinitions, const bool overFlowEdges);
+
+    /// @brief width of the automat
+    size_t width;
+    /// @brief height of the automat
+    size_t height;
 
     /// @brief Split string by character delimiter
     /// @param line string to be split
