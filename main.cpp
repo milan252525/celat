@@ -18,7 +18,8 @@ enum class IDs {
     timer,
     start,
     preset_bb,
-    randomize
+    randomize,
+    board_size_btn
 };
 
 //class drawing automat grid on the GUI
@@ -76,6 +77,10 @@ private:
     //GUI elements
     DrawPane* drawPane;
 
+    wxStaticText* boardSizeTitle;
+    wxSlider* boardSizeSlider;
+    wxButton* boardSizeBtn;
+
     wxStaticText* cellDefTitle;
     wxTextCtrl* cellDefTxt;
 
@@ -103,6 +108,7 @@ private:
 
     wxBoxSizer* sizer;
     wxBoxSizer* sizerCtrlBtns;
+    wxBoxSizer* sizerBoardSize;
     wxBoxSizer* sizerSetHelp;
     wxBoxSizer* sizerPresets;
     wxBoxSizer* sizerBoardControl;
@@ -119,11 +125,12 @@ public:
     /// @param title title of the frame
     /// @param pos position of the frame
     /// @param size size of the frame
-    MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
+    MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size, const int newSize);
     //event functions
     void oneStepBtnEvent(wxCommandEvent& event);
     void setRulesBtnEvent(wxCommandEvent& event);
     void displayHelpEvent(wxCommandEvent& event);
+    void setBoardSize(wxCommandEvent& event);
     void clearCells(wxCommandEvent& event);
     void loadPreset(wxCommandEvent& event);
     void onTimer(wxTimerEvent& event);
@@ -137,7 +144,9 @@ public:
 bool MainApp::OnInit() {
     //calculating width, considering extra space cause by lines between cells
     int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
-    MainFrame* mainWin = new MainFrame(wxString("CELAT"), wxPoint(50, 50), wxSize(1000, gridWidth));
+    int gridHeight = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
+    if (gridHeight < 750) gridHeight = 750;
+    MainFrame* mainWin = new MainFrame(wxString("CELAT"), wxPoint(50, 50), wxSize(gridWidth+350, gridHeight), GRID_WIDTH);
     mainWin->Show(TRUE);
     SetTopWindow(mainWin);
     return TRUE;
@@ -145,6 +154,10 @@ bool MainApp::OnInit() {
 
 void MainFrame::createUIElements(const std::string& cellDefinitions, const std::string& rulesDefinitions) {
     //wx objects initialization
+    boardSizeTitle = new wxStaticText(this, (int)IDs::default_id, wxString("BOARD SIZE"));
+    boardSizeSlider = new wxSlider(this, (int)IDs::default_id, 30, 10, 50, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL | wxSL_AUTOTICKS | wxSL_VALUE_LABEL | wxSL_MIN_MAX_LABELS);
+    boardSizeBtn = new wxButton(this, (int)IDs::board_size_btn, wxString("SET SIZE (RESTART REQUIRED)"));
+
     cellDefTitle = new wxStaticText(this, (int)IDs::default_id, wxString("CELL DEFINITIONS"));
     cellDefTxt = new wxTextCtrl(this, (int)IDs::default_id, cellDefinitions, wxDefaultPosition, wxSize(300, 100), wxTE_MULTILINE | wxTE_LEFT);
 
@@ -179,8 +192,9 @@ void MainFrame::createSizers() {
     sizerSetHelp = new wxBoxSizer(wxHORIZONTAL);
     sizerPresets = new wxBoxSizer(wxHORIZONTAL);
     sizerBoardControl = new wxBoxSizer(wxHORIZONTAL);
+    sizerBoardSize = new wxBoxSizer(wxHORIZONTAL);
     //main sizer for control panel
-    int rows = 12;
+    int rows = 15;
     int columns = 1;
     int vgap = 10;
     int hgap = 10;
@@ -202,6 +216,9 @@ void MainFrame::populateSizers() {
     sizerPresets->Add(btnPresetWW);
     sizerPresets->Add(btnPresetBB);
 
+    controlsSizer->Add(boardSizeTitle);
+    controlsSizer->Add(boardSizeSlider);
+    controlsSizer->Add(boardSizeBtn);
     controlsSizer->Add(cellDefTitle);
     controlsSizer->Add(cellDefTxt, wxEXPAND);
     controlsSizer->Add(cellRulesTitle);
@@ -222,17 +239,17 @@ void MainFrame::populateSizers() {
     SetAutoLayout(true);
 }
 
-MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
+MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size, const int newSize)
     : wxFrame((wxFrame*)NULL, (int)IDs::default_id, title, pos, size) {
     
     //automat construction
     bool overflow = true;
     auto& def_defs = Presets::GOL_defs;
     auto& def_rules = Presets::GOL_rules;
-    Automat* automat = new Automat(GRID_WIDTH, GRID_WIDTH, def_defs, def_rules, overflow);
+    Automat* automat = new Automat(newSize, newSize, def_defs, def_rules, overflow);
 
     //drawpane
-    int gridWidth = (GRID_WIDTH * CELL_WIDTH) + GRID_WIDTH * 2;
+    int gridWidth = (newSize * CELL_WIDTH) + newSize * 2;
     drawPane = new DrawPane(this, wxSize(gridWidth, gridWidth), automat);
 
     SetBackgroundColour(*wxLIGHT_GREY);
@@ -253,7 +270,7 @@ void DrawPane::mouseDown(wxMouseEvent& event) {
     int y = event.GetX();
     int rowCell = x / CELL_WIDTH;
     int colCell = y / CELL_WIDTH;
-    if (rowCell >= 0 && colCell >= 0 && rowCell < GRID_WIDTH && colCell < GRID_WIDTH) {
+    if (rowCell >= 0 && colCell >= 0 && rowCell < (int)automat->width && colCell < (int)automat->height) {
         automat->cellCycleType(rowCell, colCell);
         paintCellAt(rowCell, colCell);
     }
@@ -262,9 +279,9 @@ void DrawPane::mouseDown(wxMouseEvent& event) {
 void DrawPane::render(wxDC& dc) {
     //drawing each cell as a rectangle
     dc.SetPen(*wxGREY_PEN);
-    for (size_t i = 0; i < GRID_WIDTH; i++)
+    for (size_t i = 0; i < automat->height; i++)
     {
-        for (size_t j = 0; j < GRID_WIDTH; j++)
+        for (size_t j = 0; j < automat->width; j++)
         {
             wxColor cellColour = wxColor(automat->getColourAt(j, i));
             dc.SetBrush(wxBrush(cellColour));
@@ -294,7 +311,7 @@ void MainFrame::setRulesBtnEvent(wxCommandEvent& event) {
     std::string newRules = std::string(this->cellRulesTxt->GetValue().mb_str());
     bool overflow = checkOverFlow->IsChecked();
     try {
-        drawPane->automat = new Automat(GRID_WIDTH, GRID_WIDTH, newDefs, newRules, overflow);
+        drawPane->automat = new Automat(drawPane->automat->width, drawPane->automat->height, newDefs, newRules, overflow);
         drawPane->paintNow();
     }
     catch (const Automat::InvalidFormatException& e) {
@@ -346,7 +363,7 @@ void MainFrame::loadPreset(wxCommandEvent& event) {
         new_defs = Presets::BB_defs;
         new_rules = Presets::BB_rules;
     }
-    drawPane->automat = new Automat(GRID_WIDTH, GRID_WIDTH, new_defs, new_rules, overflow);
+    drawPane->automat = new Automat(drawPane->automat->width, drawPane->automat->height, new_defs, new_rules, overflow);
     cellDefTxt->SetValue(new_defs);
     cellRulesTxt->SetValue(new_rules);
     drawPane->paintNow();
@@ -374,6 +391,19 @@ void MainFrame::randomizeCells(wxCommandEvent& event) {
     drawPane->paintNow();
 }
 
+void MainFrame::setBoardSize(wxCommandEvent& event) {
+    this->timer->Stop();
+    int newSize = boardSizeSlider->GetValue();
+    int gridWidth = (newSize * CELL_WIDTH) + newSize * 2;
+    int gridHeight = (newSize * CELL_WIDTH) + newSize * 2;
+    if (gridHeight < 750) gridHeight = 750;
+    MainFrame* mainWin = new MainFrame(wxString("CELAT"), wxPoint(50, 50), wxSize(gridWidth + 350, gridHeight), newSize);
+    mainWin->boardSizeSlider->SetValue(newSize);
+    mainWin->Show(TRUE);
+    this->drawPane->Destroy();
+    this->Destroy();
+}
+
 //wxWidgets macro to start app
 IMPLEMENT_APP(MainApp)
 
@@ -390,6 +420,7 @@ EVT_BUTTON((int)IDs::clear, MainFrame::clearCells)
 EVT_BUTTON((int)IDs::randomize, MainFrame::randomizeCells)
 EVT_TIMER((int)IDs::timer, MainFrame::onTimer)
 EVT_BUTTON((int)IDs::start, MainFrame::timerStartStop)
+EVT_BUTTON((int)IDs::board_size_btn, MainFrame::setBoardSize)
 END_EVENT_TABLE()
 //events for DrawPane
 BEGIN_EVENT_TABLE(DrawPane, wxPanel)
