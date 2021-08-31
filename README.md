@@ -40,13 +40,11 @@ In case you use normal Command prompt you will have to locate where msbuild is i
 
 You can additionally specify platform with`/p:Platform=x86` argument. Available options are `x64` (64-bit) and `x86` (32-bit).
 
-
-
 Alternatively you can download Windows executables from this [release](https://gitlab.mff.cuni.cz/abraham1/celat/-/releases/v1).
 
 ## Usage
 
-<img title="" src="docs/images/celat.png" alt="">
+<img title="" src="docs/images/celat2.png" alt="">
 
 A grid of the automaton is located on the left side. You can click each individual cell to cycle its state to a next one. On the right side a control panel is located.
 
@@ -58,12 +56,13 @@ In the first textbox you can define cells of the automaton.
 
 Each definition needs to be on separate line, empty lines will be ignored.
 
-**Format:** NAME,COLOUR
+**Format:** NAME,COLOUR,PROBABILITY
 
-| Name   | Description                                                                          |
-| ------ | ------------------------------------------------------------------------------------ |
-| NAME   | name of the cell type, only letter of English alphabet should be used, no whitespace |
-| COLOUR | hexadecimal RGB representation of a cell colour                                      |
+| Name        | Description                                                                          |
+| ----------- | ------------------------------------------------------------------------------------ |
+| NAME        | name of the cell type, only letter of English alphabet should be used, no whitespace |
+| COLOUR      | hexadecimal RGB representation of a cell colour                                      |
+| PROBABILITY | probability of this cell appearing when board is randomly generated                  |
 
 **Examples**:
 
@@ -137,6 +136,8 @@ Dead cell becomes alive if it has  two alive neighbours.
 This automaton almost always results in chaotic growth, randomizing the board is recommended with this one.
 
 ### Other functionalities
+
+**SET BOARD SIZE** - set size of the board, application will restart and all settings will be reset!
 
 **ONE STEP** - advances the automaton by one evolution
 

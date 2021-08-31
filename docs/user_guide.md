@@ -44,7 +44,7 @@ Alternatively you can download Windows executables from this [release](https://g
 
 ## Usage
 
-<img title="" src="images/celat.png" alt="">
+<img title="" src="images/celat2.png" alt="" width="727">
 
 A grid of the automaton is located on the left side. You can click each individual cell to cycle its state to a next one. On the right side a control panel is located.
 
@@ -56,12 +56,13 @@ In the first textbox you can define cells of the automaton.
 
 Each definition needs to be on separate line, empty lines will be ignored.
 
-**Format:** NAME,COLOUR
+**Format:** NAME,COLOUR,PROBABILITY
 
-| Name   | Description                                                                          |
-| ------ | ------------------------------------------------------------------------------------ |
-| NAME   | name of the cell type, only letter of English alphabet should be used, no whitespace |
-| COLOUR | hexadecimal RGB representation of a cell colour                                      |
+| Name        | Description                                                                          |
+| ----------- | ------------------------------------------------------------------------------------ |
+| NAME        | name of the cell type, only letter of English alphabet should be used, no whitespace |
+| COLOUR      | hexadecimal RGB representation of a cell colour                                      |
+| PROBABILITY | probability of this cell appearing when board is randomly generated                  |
 
 **Examples**:
 
@@ -134,9 +135,9 @@ Dead cell becomes alive if it has  two alive neighbours.
 
 This automaton almost always results in chaotic growth, randomizing the board is recommended with this one.
 
-
-
 ### Other functionalities
+
+**SET BOARD SIZE** - set size of the board, application will restart and all settings will be reset!
 
 **ONE STEP** - advances the automaton by one evolution
 
