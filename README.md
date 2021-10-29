@@ -1,5 +1,7 @@
 # CELAT - Universal Cellular Automaton
 
+**NOTE:** wxWidgets library has been removed from lib/ due to GitHub file size limits. It is included in [this](https://github.com/milan252525/celat/releases/tag/v1.1) release.
+
 # User guide
 
 ## Introduction
@@ -12,7 +14,7 @@ This application is distributed as a project for Microsoft Visual Studio and can
 
 It is necessary to unzip libraries as they had to be compressed due to their size.
 
-1. `git clone https://gitlab.mff.cuni.cz/abraham1/celat.git`
+1. `git clone https://github.com/milan252525/celat.git`
 
 2. `cd celat`
 
@@ -40,7 +42,7 @@ In case you use normal Command prompt you will have to locate where msbuild is i
 
 You can additionally specify platform with`/p:Platform=x86` argument. Available options are `x64` (64-bit) and `x86` (32-bit).
 
-Alternatively you can download Windows executables from this [release](https://gitlab.mff.cuni.cz/abraham1/celat/-/releases/v1).
+Alternatively you can download Windows executables from this [release](https://github.com/milan252525/celat/releases/tag/v1.1).
 
 ## Usage
 
