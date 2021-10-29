@@ -12,7 +12,7 @@ This application is distributed as a project for Microsoft Visual Studio and can
 
 It is necessary to unzip libraries as they had to be compressed due to their size.
 
-1. `git clone https://gitlab.mff.cuni.cz/abraham1/celat.git`
+1. `git clone https://github.com/milan252525/celat.git`
 
 2. `cd celat`
 
